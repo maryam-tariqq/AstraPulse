@@ -1,15 +1,92 @@
-## To run
 
-```
+# ASTRA PULSE
+
+ASTRA PULSE is an astronaut health-monitoring system that evaluates crew health indicators using rule-based monitoring and compound health rules.
+
+## Getting Started
+
+Install the required dependencies:
+
+```bash
 pip install -r requirements.txt
+```
+
+Start the backend:
+
+```bash
 python astra_backend.py serve
 ```
-it will run on: http://127.0.0.1:8000/ui/
 
-## 20-indicator version (rules v5.1.0-compact20)
-- `astra_rules.json`: crew (16) + motion_sickness (1) + body_temperature (3) = 20 indicators, 6 compound rules.
-- `A01/A02/A03_30_days.csv`: 30 days x 20 indicators + `posture`. Columns are named after the rule indicator ids and load automatically:
-  `python astra_backend.py load A01_30_days.csv --reset` then `load A02_30_days.csv`, `load A03_30_days.csv` (600 readings each). `astra.db` is already loaded.
-- Compound rules can use another group's reading for the same person and day (CO2 is in body_temperature, headache in crew; heat strain uses crew aerobic minutes). Baselines and references are still never pooled across groups.
-- `astra-frontend/index.html`: the questionnaire asks exactly these indicators (plus glucose and pain, which are app-only), crew ids are A01-A03, default check is day 31 (`?day=&phase=` to change).
-- Tests: `pytest` (the API test needs `pip install -r requirements.txt`).
+Open the application at:
+
+**http://127.0.0.1:8000/ui/**
+
+## Dataset and Indicators
+
+This version uses rules **v5.1.0-compact20**, containing 20 indicators:
+
+- 16 crew indicators
+- 1 motion sickness indicator
+- 3 body temperature indicators
+- 6 compound rules
+
+The dataset contains 30 days of readings for each crew member:
+
+- `A01_30_days.csv`
+- `A02_30_days.csv`
+- `A03_30_days.csv`
+
+Each CSV contains 20 indicators plus `posture`. The columns are named after the rule indicator IDs and load automatically.
+
+The database (`astra.db`) is already populated. To reload the data, run:
+
+```bash
+python astra_backend.py load A01_30_days.csv --reset
+python astra_backend.py load A02_30_days.csv
+python astra_backend.py load A03_30_days.csv
+```
+
+Each crew member has 600 readings.
+
+## Frontend
+
+The frontend is located at:
+
+```text
+astra-frontend/index.html
+```
+
+The questionnaire includes the 20 rule indicators, plus glucose and pain, which are app-only indicators.
+
+Available crew IDs are `A01`, `A02`, and `A03`.
+
+The default evaluation day is **Day 31**. The day and phase can be changed using:
+
+```text
+?day=&phase=
+```
+
+## Compound Rules
+
+Compound rules can use readings from another group for the same crew member and day.
+
+For example:
+- CO2 is in `body_temperature`.
+- Headache is in `crew`.
+- Heat strain uses crew aerobic minutes.
+
+However, baselines and reference values are never pooled across groups.
+
+## Running Tests
+
+Run the test suite with:
+
+```bash
+pytest
+```
+
+The API test requires the project dependencies to be installed first:
+
+```bash
+pip install -r requirements.txt
+```
