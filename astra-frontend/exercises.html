@@ -1,0 +1,1239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ASTRAPULSE exercises and activities</title>
+    <style>
+        :root {
+            --bg: #070b16;
+            --panel: rgba(18, 25, 44, .72);
+            --line: rgba(150, 165, 200, .2);
+            --ink: #ecf0f7;
+            --mute: #98a3bd;
+            --blue: #6f93d6;
+            --ok: #5fae8e;
+            --watch: #d9a441;
+            --act: #e0705a;
+            --acc: #6f93d6
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1100px 650px at 80% -10%, #111a30 0%, transparent 60%), var(--bg);
+            color: var(--ink);
+            font: 16px/1.55 "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh
+        }
+
+        #stars {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none
+        }
+
+        header,
+        #tabs,
+        main {
+            position: relative;
+            z-index: 1
+        }
+
+        .mono {
+            font-family: "SF Mono", Consolas, monospace
+        }
+
+        .ok {
+            color: var(--ok)
+        }
+
+        .watch {
+            color: var(--watch)
+        }
+
+        .act {
+            color: var(--act)
+        }
+
+        header {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 22px 24px 6px
+        }
+
+        header a {
+            color: var(--blue);
+            text-decoration: none;
+            font-size: 14px
+        }
+
+        header a:hover {
+            text-decoration: underline
+        }
+
+        h1 {
+            font-size: 30px;
+            margin: 10px 0 4px;
+            font-weight: 700;
+            letter-spacing: -.01em;
+            color: var(--ink)
+        }
+
+        h2 {
+            font-size: 21px;
+            margin: 0 0 4px
+        }
+
+        h3 {
+            font-size: 16px;
+            margin: 0 0 10px
+        }
+
+        .m {
+            color: var(--mute);
+            font-size: 14px;
+            margin: 0;
+            max-width: 62ch
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+            padding: 12px 16px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--panel);
+            backdrop-filter: blur(10px)
+        }
+
+        .bar {
+            height: 8px;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .08);
+            overflow: hidden;
+            margin-top: 5px
+        }
+
+        .bar>i {
+            display: block;
+            height: 100%;
+            width: 0;
+            border-radius: 99px;
+            background: var(--acc);
+            transition: width .8s cubic-bezier(.2, .8, .2, 1)
+        }
+
+        .chip {
+            border: 1px solid var(--line);
+            border-radius: 99px;
+            padding: 6px 12px;
+            font-size: 13px;
+            color: var(--ink);
+            background: rgba(255, 255, 255, .04)
+        }
+
+        .chip button {
+            all: unset;
+            cursor: pointer
+        }
+
+        /* tabs */
+        #tabs {
+            max-width: 960px;
+            margin: 16px auto 0;
+            padding: 0 24px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        #tabs a {
+            display: inline-flex;
+            gap: 8px;
+            align-items: center;
+            border: 1px solid var(--line);
+            border-radius: 99px;
+            padding: 9px 16px;
+            color: var(--mute);
+            text-decoration: none;
+            font-size: 15px;
+            background: rgba(255, 255, 255, .03);
+            transition: transform .2s, border-color .2s, background .2s
+        }
+
+        #tabs a:hover {
+            transform: translateY(-2px);
+            border-color: var(--blue);
+            color: var(--ink)
+        }
+
+        #tabs a[aria-current=page] {
+            color: #fff;
+            border-color: var(--acc);
+            background: color-mix(in srgb, var(--acc) 22%, transparent)
+        }
+
+        main {
+            max-width: 960px;
+            margin: 18px auto;
+            padding: 0 24px 70px
+        }
+
+        section[hidden] {
+            display: none
+        }
+
+        section {
+            animation: rise .5s cubic-bezier(.2, .8, .2, 1)
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(14px)
+            }
+        }
+
+        .box {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 22px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden
+        }
+
+        .box::before {
+            content: "";
+            position: absolute;
+            inset: 0 0 auto 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--acc), transparent);
+            opacity: .8
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 26px;
+            align-items: center
+        }
+
+        @media(max-width:700px) {
+            .grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .big {
+            font: 700 42px "SF Mono", Consolas, monospace;
+            margin: 6px 0;
+            letter-spacing: -.02em
+        }
+
+        .btn {
+            background: var(--acc);
+            color: #0b1220;
+            border: 0;
+            border-radius: 10px;
+            padding: 11px 20px;
+            font: 700 15px "Helvetica Neue", Arial, sans-serif;
+            cursor: pointer;
+            margin: 4px 8px 4px 0;
+            transition: transform .15s, filter .2s
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            filter: brightness(1.08)
+        }
+
+        .btn:active {
+            transform: scale(.96)
+        }
+
+        .btn.g {
+            background: rgba(255, 255, 255, .04);
+            color: var(--ink);
+            border: 1px solid var(--line);
+            box-shadow: none
+        }
+
+        :focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 2px
+        }
+
+        .c {
+            text-align: center
+        }
+
+        /* ring */
+        .ringw {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto
+        }
+
+        .ringw svg {
+            width: 100%;
+            height: 100%
+        }
+
+        .rb {
+            fill: none;
+            stroke: rgba(255, 255, 255, .08);
+            stroke-width: 7
+        }
+
+        .rf {
+            fill: none;
+            stroke: var(--acc);
+            stroke-width: 7;
+            stroke-linecap: round;
+            stroke-dasharray: 327;
+            stroke-dashoffset: 327;
+            transition: stroke-dashoffset 1s linear
+        }
+
+        .rt {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-content: center;
+            text-align: center
+        }
+
+        .rt .big {
+            font-size: 38px;
+            margin: 0
+        }
+
+        .rt .sm {
+            font-size: 13px;
+            color: var(--mute)
+        }
+
+        /* legs */
+        .figw {
+            position: relative
+        }
+
+        .figw svg {
+            width: 100%;
+            height: auto
+        }
+
+        .figw::after {
+            content: "";
+            position: absolute;
+            left: 12%;
+            right: 12%;
+            bottom: 4%;
+            height: 12px;
+            border-radius: 50%;
+            background: radial-gradient(ellipse, rgba(111, 147, 214, .5), transparent 70%)
+        }
+
+        .segs {
+            display: flex;
+            gap: 4px;
+            margin: 12px 0
+        }
+
+        .segs i {
+            flex: 1;
+            height: 6px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, .1);
+            transition: background .3s
+        }
+
+        .segs i.on {
+            background: var(--acc)
+        }
+
+        .segs i.rest.on {
+            background: var(--mute);
+            box-shadow: none
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0
+        }
+
+        .dots i {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            border: 2px solid var(--line);
+            display: grid;
+            place-items: center;
+            font-size: 12px;
+            font-style: normal;
+            transition: all .3s
+        }
+
+        .dots i.on {
+            background: var(--ok);
+            border-color: var(--ok);
+            color: #0b1a14
+        }
+
+        .mv {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            margin: 6px 0;
+            transition: all .3s
+        }
+
+        .mv .n {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            background: rgba(255, 255, 255, .07);
+            font: 700 14px "SF Mono", Consolas, monospace
+        }
+
+        .mv span {
+            color: var(--mute);
+            font-size: 14px
+        }
+
+        .mv.cur {
+            border-color: var(--acc);
+            background: color-mix(in srgb, var(--acc) 14%, transparent);
+            transform: translateX(6px)
+        }
+
+        .mv.cur .n {
+            background: var(--acc);
+            color: #04112e
+        }
+
+        .mv.done {
+            opacity: .55
+        }
+
+        /* breathing */
+        .orbw {
+            position: relative;
+            width: 240px;
+            height: 240px;
+            margin: 12px auto;
+            display: grid;
+            place-items: center
+        }
+
+        .orb {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--acc);
+            transform: scale(.6);
+            box-shadow: 0 0 30px color-mix(in srgb, var(--acc) 30%, transparent);
+            position: relative;
+            z-index: 2
+        }
+
+        .orbw i {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px solid var(--acc);
+            opacity: 0;
+            z-index: 1
+        }
+
+        .orbw.run i {
+            animation: ripple 4s ease-out infinite
+        }
+
+        .orbw.run i:nth-child(2) {
+            animation-delay: 1.3s
+        }
+
+        .orbw.run i:nth-child(3) {
+            animation-delay: 2.6s
+        }
+
+        @keyframes ripple {
+            0% {
+                opacity: .6;
+                transform: scale(.7)
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(1.6)
+            }
+        }
+
+        .cd {
+            position: absolute;
+            z-index: 3;
+            font: 700 38px "SF Mono", Consolas, monospace;
+            color: #04112e
+        }
+
+        .lab {
+            font-size: 22px;
+            min-height: 34px;
+            font-weight: 600
+        }
+
+        .pill {
+            display: inline-block;
+            border: 1px solid var(--line);
+            border-radius: 99px;
+            padding: 3px 12px;
+            font-size: 13px;
+            color: var(--mute);
+            margin: 6px 0
+        }
+
+        /* focus */
+        .arena {
+            position: relative;
+            height: 240px;
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            margin: 12px 0;
+            background: radial-gradient(circle at 50% 50%, rgba(111, 147, 214, .08), transparent 70%);
+            overflow: hidden
+        }
+
+        .dot {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 0;
+            background: var(--watch);
+            cursor: pointer;
+            animation: pop .25s ease-out
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(0)
+            }
+        }
+
+        .stat {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 6px 0
+        }
+
+        .stat .chip b {
+            color: var(--watch)
+        }
+
+        .fb {
+            color: var(--mute);
+            min-height: 24px;
+            margin: 6px 0
+        }
+
+        .tapfx {
+            position: absolute;
+            pointer-events: none;
+            font: 700 14px "SF Mono", Consolas, monospace;
+            color: var(--ok);
+            animation: fl .8s ease-out forwards
+        }
+
+        @keyframes fl {
+            to {
+                opacity: 0;
+                transform: translateY(-34px)
+            }
+        }
+
+        /* food */
+        .fcard {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            background: rgba(255, 255, 255, .03);
+            margin: 12px 0;
+            animation: rise .35s
+        }
+
+        .fcard .e {
+            font-size: 68px;
+            line-height: 1.1
+        }
+
+        .fcard .t {
+            font-size: 22px;
+            font-weight: 600;
+            margin-top: 6px
+        }
+
+        .fcard.shake {
+            animation: shake .4s
+        }
+
+        @keyframes shake {
+            25% {
+                transform: translateX(-8px)
+            }
+
+            75% {
+                transform: translateX(8px)
+            }
+        }
+
+        .fcard.good {
+            border-color: var(--ok);
+            background: rgba(95, 174, 142, .1)
+        }
+
+        .fcard.bad {
+            border-color: var(--act);
+            background: rgba(224, 112, 90, .1)
+        }
+
+        .track {
+            position: relative;
+            height: 46px;
+            margin: 14px 0;
+            border-radius: 99px;
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid var(--line)
+        }
+
+        .track i {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            border-radius: 99px;
+            background: linear-gradient(90deg, rgba(95, 174, 142, .2), rgba(95, 174, 142, .6));
+            transition: width 1s linear
+        }
+
+        .track b {
+            position: absolute;
+            top: 3px;
+            left: 0;
+            font-size: 28px;
+            transition: left 1s linear;
+            font-weight: 400
+        }
+
+        .track .fl {
+            position: absolute;
+            right: 12px;
+            top: 8px;
+            font-size: 22px
+        }
+
+        /* sleep */
+        .cab {
+            position: relative;
+            height: 150px;
+            border-radius: 12px;
+            border: 1px solid var(--line);
+            margin: 12px 0;
+            overflow: hidden;
+            transition: background .2s
+        }
+
+        .win {
+            position: absolute;
+            right: 8%;
+            top: 16px;
+            width: 90px;
+            height: 100px;
+            border: 4px solid rgba(255, 255, 255, .35);
+            border-radius: 8px;
+            background: #050a20;
+            overflow: hidden
+        }
+
+        .win i {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #fff;
+            animation: tw 2.5s ease-in-out infinite
+        }
+
+        @keyframes tw {
+            50% {
+                opacity: .2
+            }
+        }
+
+        .earth {
+            position: absolute;
+            bottom: -40px;
+            left: -20px;
+            width: 140px;
+            height: 80px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 40% 30%, #6f93d6, #1d3358);
+        }
+
+        .lamp {
+            position: absolute;
+            left: 10%;
+            top: -30px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            filter: blur(30px);
+            transition: all .2s
+        }
+
+        .bed {
+            position: absolute;
+            left: 8%;
+            bottom: 14px;
+            width: 46%;
+            height: 34px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, .18)
+        }
+
+        .tip {
+            font-size: 14px;
+            color: var(--mute);
+            min-height: 22px
+        }
+
+        input[type=range] {
+            width: 100%;
+            accent-color: var(--blue);
+            height: 30px
+        }
+
+        .chk {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            margin: 6px 0;
+            cursor: pointer;
+            transition: all .25s;
+            background: rgba(255, 255, 255, .02)
+        }
+
+        .chk:hover {
+            border-color: var(--acc)
+        }
+
+        .chk input {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--ok)
+        }
+
+        .chk.on {
+            background: rgba(95, 174, 142, .1);
+            border-color: var(--ok)
+        }
+
+        .chk.on span {
+            text-decoration: line-through;
+            opacity: .7
+        }
+
+        /* heart */
+        .hw {
+            position: relative
+        }
+
+        .hw svg {
+            width: 100%;
+            height: auto
+        }
+
+        .beat {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: b var(--d, .9s) ease-in-out infinite;
+        }
+
+        @keyframes b {
+            50% {
+                transform: scale(1.16)
+            }
+        }
+
+        .ecg {
+            fill: none;
+            stroke: var(--ok);
+            stroke-width: 2.5;
+            stroke-dasharray: 120 280;
+            stroke-linecap: round;
+            animation: ecg var(--e, 1.8s) linear infinite
+        }
+
+        @keyframes ecg {
+            from {
+                stroke-dashoffset: 400
+            }
+
+            to {
+                stroke-dashoffset: 0
+            }
+        }
+
+        .hint {
+            font-size: 13px;
+            padding: 2px 12px;
+            border-radius: 99px;
+            display: inline-block
+        }
+
+        .hint.h {
+            background: rgba(224, 112, 90, .18);
+            color: #f0a798
+        }
+
+        .hint.e {
+            background: rgba(95, 174, 142, .16);
+            color: #9bd3bb
+        }
+
+        /* toast + confetti */
+        #toast {
+            position: fixed;
+            left: 50%;
+            bottom: 26px;
+            transform: translate(-50%, 120px);
+            z-index: 20;
+            padding: 12px 20px;
+            border-radius: 99px;
+            background: rgba(14, 24, 56, .95);
+            border: 1px solid var(--blue);
+            box-shadow: 0 8px 30px rgba(111, 147, 214, .4);
+            transition: transform .45s cubic-bezier(.2, 1.2, .3, 1);
+            font-weight: 600
+        }
+
+        #toast.show {
+            transform: translate(-50%, 0)
+        }
+
+        #fx {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 15;
+            pointer-events: none
+        }
+
+        .seg {
+            display: inline-flex;
+            border: 1px solid var(--line);
+            border-radius: 99px;
+            overflow: hidden
+        }
+
+        .seg button {
+            all: unset;
+            cursor: pointer;
+            padding: 6px 14px;
+            font-size: 13px;
+            color: var(--mute);
+            transition: background .2s, color .2s
+        }
+
+        .seg button[aria-pressed=true] {
+            background: var(--acc);
+            color: #0b1220;
+            font-weight: 700
+        }
+
+        .seg button:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: -3px
+        }
+
+        .note {
+            border-left: 3px solid var(--acc);
+            padding-left: 10px;
+            margin: 10px 0
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+            * {
+                animation: none !important;
+                transition: none !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="stars" aria-hidden="true"></canvas><canvas id="fx" aria-hidden="true"></canvas>
+    <header><a id="back" href="index.html">Back to dashboard</a>
+        <h1>Exercises and activities</h1>
+        <p class="m">General wellness activities for the areas on your dashboard. They are not medical advice. Follow
+            your flight surgeon's plan.</p>
+        <div class="hud">
+            <div class="seg" role="group" aria-label="Environment"><button data-env="orbit" aria-pressed="true">In
+                    orbit</button><button data-env="surface" aria-pressed="false">On surface</button></div>
+            <div class="chip"><button id="snd" aria-pressed="false">Sound: off</button></div>
+        </div>
+    </header>
+    <nav id="tabs" aria-label="Areas"></nav>
+    <main>
+        <section id="legs" hidden>
+            <div class="box grid">
+                <div class="figw"><svg id="fig" viewBox="0 0 200 220" role="img"
+                        aria-label="Animated figure showing the current move"></svg></div>
+                <div>
+                    <h2 id="exn">Resistance circuit</h2>
+                    <p class="m" id="exh">Four moves, 30 seconds each with 10 seconds rest. About 3 minutes.</p>
+                    <p class="m note" id="ln"
+                        data-s="On a planet surface, gravity does the loading, so these moves use your body weight."
+                        data-o="In orbit there is no weight to push against, so these moves use a resistance machine or bungee load, with a harness holding you in place.">
+                    </p>
+                    <div class="ringw" style="width:150px;height:150px;margin:10px 0"><svg viewBox="0 0 120 120">
+                            <circle class="rb" cx="60" cy="60" r="52" />
+                            <circle class="rf" id="lr" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" />
+                        </svg>
+                        <div class="rt">
+                            <div class="big" id="clock" style="font-size:30px">3:00</div>
+                        </div>
+                    </div>
+                    <div class="segs" id="segs"></div>
+                    <p class="m">Sessions this week: <b id="cnt">2</b> of 5. Saved in this browser only; the dashboard
+                        figure does not change.</p>
+                    <div class="dots" id="wd"></div>
+                    <button class="btn" id="go">Start circuit</button><button class="btn g" id="lg" hidden>Log this
+                        session</button>
+                </div>
+            </div>
+            <div class="box">
+                <h3>The four moves</h3>
+                <div id="exl"></div>
+            </div>
+        </section>
+
+        <section id="head" hidden>
+            <div class="box c">
+                <h2>Box breathing</h2>
+                <p class="m" style="margin:auto">In for 4, hold 4, out for 4, hold 4. Helps settle mood and focus.</p>
+                <div id="b1"></div>
+            </div>
+            <div class="box">
+                <h2>Focus tap</h2>
+                <div id="fo"></div>
+            </div>
+            <div class="box">
+                <h3>Headache or stuffy air checklist</h3>
+                <p class="m">For headache, high cabin CO2, motion sickness or a foggy head. Tick each step as you do it.</p>
+                <div id="ck3"></div>
+                <div class="bar"><i id="ck3b"></i></div>
+            </div>
+        </section>
+
+        <section id="abdomen" hidden>
+            <div class="box">
+                <h2 id="wh" data-s="10-minute easy walk" data-o="10-minute easy treadmill walk">
+                    10-minute easy walk</h2>
+                <p class="m" id="wp" data-s="An easy walk adds to your aerobic minutes for the day."
+                    data-o="In orbit, clip into the treadmill harness and keep an easy pace. It adds to your aerobic minutes for the day.">
+                    In orbit, clip into the treadmill harness and keep an easy pace. It adds to your aerobic minutes for the day.</p>
+                <div class="big" id="wk">10:00</div>
+                <div class="track"><i id="wt"></i><b id="wa">🧑‍🚀</b><span class="fl">🏁</span></div><button
+                    class="btn" id="wg">Start walk</button>
+            </div>
+        </section>
+
+        <section id="sleep" hidden>
+            <div class="box c">
+                <h2>4-7-8 wind-down</h2>
+                <p class="m" id="sp" style="margin:auto"
+                    data-s="In for 4, hold 7, out for 8. Repeat a few rounds in bed."
+                    data-o="In for 4, hold 7, out for 8. Repeat a few rounds in your sleep station.">In for 4, hold 7,
+                    out for 8. Repeat a few rounds in bed.</p>
+                <div id="b2"></div>
+            </div>
+            <div class="box">
+                <h2 id="dh" data-s="Dim your room lights" data-o="Dim the cabin lights">Dim the cabin lights</h2>
+                <p class="m">Aim for dim, warm light for the hour before bed. Slide to see the difference.</p>
+                <div class="cab" id="cab">
+                    <div class="lamp" id="lamp"></div>
+                    <div class="win" id="win">
+                        <div class="earth"></div>
+                    </div>
+                    <div class="bed"></div>
+                </div>
+                <label>Light level <b id="lvv">100%</b><input type="range" id="lv" min="5" max="100"
+                        value="100"></label>
+                <div class="tip" id="tip"></div>
+            </div>
+            <div class="box">
+                <h3>Wind-down checklist</h3>
+                <div id="ck"></div>
+                <div class="bar"><i id="ckb"></i></div>
+            </div>
+        </section>
+
+        <section id="chest" hidden>
+            <div class="box grid">
+                <div class="hw"><svg viewBox="0 0 100 100" role="img" aria-label="Pulsing heart">
+                        <path class="beat" id="ht"
+                            d="M50 70C12 44 6 20 22 8c12-9 24-2 28 8 4-10 16-17 28-8 16 12 10 36-28 62z"
+                            fill="#d9695f" />
+                        <path class="ecg" id="ec" pathLength="400"
+                            d="M0 90H20L26 90L30 78L35 98L40 84L44 90H62L68 90L72 80L77 96L82 90H100" />
+                    </svg></div>
+                <div>
+                    <h2 id="hn">Cardio intervals</h2><span class="hint e" id="hs">Ready</span>
+                    <p class="m" id="hh" style="margin-top:8px"
+                        data-s="6 rounds: 30 seconds hard, 30 seconds easy. Use a bike, rower or brisk jog. Hard should still let you speak in short phrases."
+                        data-o="6 rounds: 30 seconds hard, 30 seconds easy. Use the stationary bike or the harnessed treadmill. Hard should still let you speak in short phrases.">
+                        6 rounds: 30 seconds hard, 30 seconds easy. Use a bike, rower or brisk jog. Hard should still
+                        let you speak in short phrases.</p>
+                    <div class="ringw" style="width:150px;height:150px;margin:10px 0"><svg viewBox="0 0 120 120">
+                            <circle class="rb" cx="60" cy="60" r="52" />
+                            <circle class="rf" id="hr" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" />
+                        </svg>
+                        <div class="rt">
+                            <div class="big" id="hc" style="font-size:30px">6:00</div>
+                        </div>
+                    </div>
+                    <div class="segs" id="hsg"></div><button class="btn" id="hg">Start intervals</button>
+                </div>
+            </div>
+            <div class="box">
+                <h3>Stand-up routine (for dizziness or low stroke volume)</h3>
+                <p class="m">Gentle steps that help blood return to the heart. Skip the hard intervals above if you feel dizzy.</p>
+                <div id="ck4"></div>
+                <div class="bar"><i id="ck4b"></i></div>
+            </div>
+        </section>
+
+        <section id="skin" hidden>
+            <div class="box c">
+                <h2>Slow cool-down breathing</h2>
+                <p class="m" style="margin:auto">In for 4, out for 6. Longer out-breaths slow the heart and help you cool down after exercise.</p>
+                <div id="b3"></div>
+            </div>
+            <div class="box">
+                <h2>Easy cool-down walk</h2>
+                <p class="m">5 minutes at an easy pace after exercise, so your temperature and heart rate settle gradually.</p>
+                <div class="ringw" style="width:150px;height:150px;margin:10px auto"><svg viewBox="0 0 120 120">
+                        <circle class="rb" cx="60" cy="60" r="52" />
+                        <circle class="rf" id="cr" cx="60" cy="60" r="52" transform="rotate(-90 60 60)" />
+                    </svg>
+                    <div class="rt">
+                        <div class="big" id="cc" style="font-size:30px">5:00</div>
+                    </div>
+                </div>
+                <div class="c"><button class="btn" id="cg">Start cool-down</button></div>
+            </div>
+            <div class="box">
+                <h3>Cooling checklist</h3>
+                <div id="ck5"></div>
+                <div class="bar"><i id="ck5b"></i></div>
+            </div>
+        </section>
+    </main>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script>
+        const $ = s => document.querySelector(s), mmss = s => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"), RM = matchMedia("(prefers-reduced-motion:reduce)").matches;
+        const get = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v) } catch (e) { return d } }, set = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) { } };
+        let ENV = get("astraEnv", "orbit"); if (ENV !== "surface") ENV = "orbit"; const ENVHOOKS = [];
+        function applyEnv() {
+            document.body.dataset.env = ENV; document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.env === ENV));
+            document.querySelectorAll("[data-o]").forEach(e => { e.textContent = ENV === "orbit" ? e.dataset.o : e.dataset.s }); ENVHOOKS.forEach(f => f())
+        }
+        document.querySelector(".seg").onclick = e => { const b = e.target.closest("button"); if (!b) return; ENV = b.dataset.env; set("astraEnv", ENV); applyEnv(); toast(ENV === "orbit" ? "Showing in-orbit activities" : "Showing surface activities"); beep(600, .08) };
+        const T = [["legs", "Resistance", "act", "■", "#e0705a"], ["head", "Mind", "watch", "▲", "#d9a441"], ["abdomen", "Aerobic", "watch", "▲", "#d9a441"], ["sleep", "Sleep", "watch", "▲", "#d9a441"], ["chest", "Heart", "ok", "●", "#5fae8e"], ["skin", "Temperature", "ok", "●", "#5fae8e"]];
+        /* tab colours follow the last saved report (index.html stores zs = area statuses per crew member) */
+        try { const all = JSON.parse(localStorage.astraCrewData || "{}"), zs = (all[localStorage.astraCur || Object.keys(all)[0]] || {}).zs, IC = { ok: "●", watch: "▲", act: "■" }, CO = { ok: "#5fae8e", watch: "#d9a441", act: "#e0705a" }; if (zs) T.forEach(t => { const s = zs[t[0]]; if (s && IC[s]) { t[2] = s; t[3] = IC[s]; t[4] = CO[s] } }) } catch (e) { }
+        let id = location.hash.slice(1); if (!T.some(t => t[0] === id)) id = "legs";
+        $("#tabs").innerHTML = T.map(t => `<a href="#${t[0]}" data-t="${t[0]}" style="--acc:${t[4]}"><span class="${t[2]}" aria-hidden="true">${t[3]}</span>${t[1]}</a>`).join("");
+        const ready = {};
+        function show(n) {
+            const prev = T.find(t => !$("#" + t[0]).hidden);
+            if (prev) $("#" + prev[0]).querySelectorAll("button").forEach(b => { if (b.textContent === "Stop") b.click() });
+            id = n; document.documentElement.style.setProperty("--acc", T.find(t => t[0] === n)[4]);
+            T.forEach(t => { $("#" + t[0]).hidden = t[0] !== n });
+            document.querySelectorAll("#tabs a").forEach(a => { if (a.dataset.t === n) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current") });
+            if (!ready[n]) { ready[n] = 1; init[n](); applyEnv() }
+            try { history.replaceState(null, "", "#" + n) } catch (e) { }
+        }
+        $("#tabs").onclick = e => { const a = e.target.closest("a"); if (!a) return; e.preventDefault(); show(a.dataset.t) };
+        addEventListener("hashchange", () => { const h = location.hash.slice(1); if (T.some(t => t[0] === h) && h !== id) show(h) });
+
+        /* starfield */
+        (function () {
+            const c = $("#stars"), x = c.getContext("2d"); let w, h, S = []; function rs() { w = c.width = innerWidth; h = c.height = innerHeight; S = Array.from({ length: Math.min(160, w * h / 9000 | 0) }, () => ({ x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.4 + .2, s: Math.random() * .25 + .03, p: Math.random() * 6 })) }
+            rs(); addEventListener("resize", rs); function f(t) { x.clearRect(0, 0, w, h); for (const s of S) { if (!RM) s.y = (s.y + s.s) % h; x.globalAlpha = .4 + .5 * Math.sin(t / 900 + s.p); x.fillStyle = "#fff"; x.beginPath(); x.arc(s.x, s.y, s.r, 0, 7); x.fill() } if (!RM) requestAnimationFrame(f) } requestAnimationFrame(f)
+        })();
+
+        /* sound */
+        let snd = get("astraSound", false), AC = null;
+        function beep(f = 660, d = .12) { if (!snd) return; try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); const o = AC.createOscillator(), g = AC.createGain(); o.frequency.value = f; o.type = "sine"; g.gain.value = .08; o.connect(g); g.connect(AC.destination); o.start(); g.gain.exponentialRampToValueAtTime(.0001, AC.currentTime + d); o.stop(AC.currentTime + d) } catch (e) { } }
+        function buzz(n) { try { navigator.vibrate && navigator.vibrate(n) } catch (e) { } }
+        const sb = $("#snd"); function sbu() { sb.textContent = "Sound: " + (snd ? "on" : "off"); sb.setAttribute("aria-pressed", snd) } sbu();
+        sb.onclick = () => { snd = !snd; set("astraSound", snd); sbu(); beep(880) };
+
+        /* toast + confetti + XP */
+        let tt; function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("show"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2600) }
+        function confetti() {
+            if (RM) return; const c = $("#fx"), x = c.getContext("2d"); c.width = innerWidth; c.height = innerHeight; const cols = ["#6f93d6", "#5fae8e", "#d9a441", "#e0705a", "#c9d2e6", "#fff"];
+            const P = Array.from({ length: 120 }, () => ({ x: innerWidth / 2, y: innerHeight * .6, vx: (Math.random() - .5) * 14, vy: -Math.random() * 14 - 4, r: Math.random() * 6 + 3, c: cols[Math.random() * 6 | 0], a: Math.random() * 6, va: (Math.random() - .5) * .4 })); let n = 0;
+            (function f() { x.clearRect(0, 0, c.width, c.height); P.forEach(p => { p.vy += .35; p.x += p.vx; p.y += p.vy; p.a += p.va; x.save(); x.translate(p.x, p.y); x.rotate(p.a); x.fillStyle = p.c; x.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); x.restore() }); if (++n < 130) requestAnimationFrame(f); else x.clearRect(0, 0, c.width, c.height) })()
+        }
+        function hud() { const s = get("astraStreak", 0); const e = $("#stk"); if (e) e.textContent = "Streak: " + s + (s === 1 ? " day" : " days") }
+        function award(xp, msg) {
+            const today = new Date().toDateString(), last = get("astraDay", ""); if (last !== today) { const y = new Date(Date.now() - 864e5).toDateString(); set("astraStreak", last === y ? get("astraStreak", 0) + 1 : 1); set("astraDay", today) }
+            hud(); toast(msg); confetti(); beep(740, .25); buzz(40)
+        }
+        hud();
+
+        /* helpers */
+        function seq(st, tick, end) { let i = 0, t = st[0].t; const h = setInterval(() => { t--; if (t < 0) { if (++i >= st.length) { clearInterval(h); end(); return } t = st[i].t } tick(st[i], i, t) }, 1000); tick(st[0], 0, t); return () => clearInterval(h) }
+        const CIRC = 327; function ringSet(el, frac) { el.style.strokeDashoffset = CIRC * (1 - Math.max(0, Math.min(1, frac))) }
+        function breath(r, p, reps) {
+            r.innerHTML = '<div class="orbw"><i></i><i></i><i></i><div class="orb"></div><div class="cd" aria-hidden="true"></div></div><div class="lab" aria-live="polite">Press start</div><div class="pill">Rounds: <b>0</b></div><br><button class="btn">Start</button>';
+            const w = r.children[0], o = w.children[3], cd = w.children[4], l = r.children[1], rc = r.children[2].children[0], b = r.children[4]; let on = 0, i = 0, round = 0, h = null;
+            function phase() {
+                if (!on) return; const k = i % p.length; if (k === 0 && i > 0) { round++; rc.textContent = round; if (round === reps) { stop(); award(25, "Breathing complete"); l.textContent = "Nice work. Rounds complete"; return } }
+                const [n, s, sc] = p[k]; i++; l.textContent = n; o.style.transition = `transform ${s}s linear`; o.style.transform = `scale(${sc})`; beep(k % 2 ? 440 : 560, .1); let t = s; cd.textContent = t; clearInterval(h); h = setInterval(() => { t--; cd.textContent = t > 0 ? t : ""; if (t <= 0) { clearInterval(h); phase() } }, 1000)
+            }
+            function stop() { on = 0; clearInterval(h); w.classList.remove("run"); b.textContent = "Start"; cd.textContent = ""; o.style.transition = "transform .5s"; o.style.transform = "scale(.6)" }
+            b.onclick = () => { if (on) { stop(); l.textContent = "Press start"; return } on = 1; i = 0; round = 0; rc.textContent = 0; b.textContent = "Stop"; if (!RM) w.classList.add("run"); phase() }
+        }
+
+        function checklist(rootId, barId, items, msg) {
+            const root = $(rootId), bar = $(barId); let paid = 0;
+            root.innerHTML = items.map((t, i) => `<label class="chk"><input type="checkbox" data-i="${i}"><span>${t}</span></label>`).join("");
+            root.onchange = e => { e.target.closest(".chk").classList.toggle("on", e.target.checked); const d = root.querySelectorAll("input:checked").length; bar.style.width = d / items.length * 100 + "%"; beep(520 + d * 80, .1); if (d === items.length && !paid) { paid = 1; award(25, msg) } }
+        }
+
+        const init = {
+            legs() {
+                const MV = [
+                    { n: "Squat", c: "Sit back and down, chest up, knees over your toes.", on: "Machine squat", oc: "Bar across your shoulders, feet shoulder width. Sit back and down, then drive up through your heels.", p: [[100, 200, 100, 148, 100, 96, 100, 52, 100, 31, 108, 72, 120, 64], [100, 200, 126, 152, 76, 146, 100, 106, 108, 86, 118, 112, 136, 104]] },
+                    { n: "Calf raise", c: "Rise onto your toes, pause, lower slowly.", on: "Heel raise", oc: "Rise onto your toes against the load, pause, lower slowly.", p: [[100, 200, 100, 148, 100, 96, 100, 52, 100, 31, 104, 76, 106, 100], [100, 184, 100, 134, 100, 82, 100, 38, 100, 17, 104, 62, 106, 86]] },
+                    { n: "Hip hinge", c: "Push hips back with a flat back, then stand tall.", on: "Deadlift", oc: "Push hips back with a flat back, then stand tall against the load.", p: [[100, 200, 100, 148, 100, 96, 100, 52, 100, 31, 104, 76, 106, 100], [100, 200, 100, 150, 76, 102, 120, 82, 142, 76, 122, 104, 122, 128]] },
+                    { n: "Push-up", c: "Body in one line. Lower with control, press away. Knees down is fine.", on: "Harnessed push-up", oc: "Bungees pull you toward the floor so your arms work against a load. Lower with control, press away.", p: [[30, 198, 70, 173, 110, 148, 150, 124, 172, 114, 150, 162, 150, 200], [30, 198, 70, 190, 110, 183, 150, 172, 172, 166, 132, 186, 150, 200]] }];
+                $("#exl").innerHTML = MV.map((m, i) => `<div class="mv" data-i="${i}"><div class="n">${i + 1}</div><div><b class="mn">${m.n}</b><br><span class="mc">${m.c}</span></div></div>`).join("");
+                const N = m => ENV === "orbit" ? m.on : m.n, C = m => ENV === "orbit" ? m.oc : m.c; ENVHOOKS.push(() => document.querySelectorAll("#exl .mv").forEach((e, i) => { e.querySelector(".mn").textContent = N(MV[i]); e.querySelector(".mc").textContent = C(MV[i]) })); let cur = 0, mode = "idle", stop = null; const fig = $("#fig"), go = $("#go"), lg = $("#lg");
+                function draw(m, k) {
+                    const a = m.p[0], q = a.map((v, i) => v + (m.p[1][i] - v) * k); const tet = ENV === "orbit" ? `<g stroke="#d9a441" stroke-width="2" stroke-dasharray="4 4" opacity=".85"><path d="M${q[6]} ${q[7]}L${Math.max(8, q[0] - 36)} 201"/><path d="M${q[6]} ${q[7]}L${Math.min(192, q[0] + 46)} 201"/></g>` : "";
+                    fig.innerHTML = `<line x1="10" x2="190" y1="201" y2="201" stroke="#8fa0c9" opacity=".4"/>${tet}<g fill="none" stroke="#eaf0ff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"><path d="M${q[0]} ${q[1]}L${q[2]} ${q[3]}L${q[4]} ${q[5]}L${q[6]} ${q[7]}"/><path d="M${q[0]} ${q[1]}L${q[0] + 14} 200"/><path stroke="#8fa8d8" d="M${q[6]} ${q[7]}L${q[10]} ${q[11]}L${q[12]} ${q[13]}"/></g><circle cx="${q[8]}" cy="${q[9]}" r="10" fill="#eaf0ff"/>`
+                }
+                function loop(ts) { const k = (1 - Math.cos(ts / 4000 * 2 * Math.PI)) / 2; draw(MV[cur], mode === "rest" || (RM && mode === "idle") ? 0 : k); requestAnimationFrame(loop) } requestAnimationFrame(loop);
+                const st = []; MV.forEach((m, i) => { st.push({ m: i, w: 1, t: 30 }); if (i < 3) st.push({ m: i + 1, w: 0, t: 10 }) });
+                $("#segs").innerHTML = st.map(s => `<i class="${s.w ? "" : "rest"}"></i>`).join(""); const sg = [...$("#segs").children], mvs = [...document.querySelectorAll(".mv")];
+                function mark(i) { sg.forEach((e, j) => e.classList.toggle("on", j <= i)) }
+                function setMv(s) { mvs.forEach((e, j) => { e.classList.toggle("cur", s.w && j === s.m); e.classList.toggle("done", j < s.m || (j === s.m && !s.w)) }) }
+                function idle(msg) { mode = "idle"; go.textContent = "Start circuit"; if (msg) { $("#exn").textContent = "Circuit complete"; $("#exh").textContent = "Log it to count it this week."; lg.hidden = false; ringSet($("#lr"), 1); beep(990, .3); buzz([60, 40, 60]) } else { mark(-1); setMv({ m: -1, w: 0 }); ringSet($("#lr"), 0); $("#clock").textContent = "3:00" } }
+                go.onclick = () => {
+                    if (stop) { stop(); stop = null; idle(); $("#exn").textContent = "Resistance circuit"; $("#exh").textContent = "Four moves, 30 seconds each with 10 seconds rest. About 3 minutes."; return } lg.hidden = true; go.textContent = "Stop";
+                    stop = seq(st, (s, i, t) => { cur = s.m; mode = s.w ? "work" : "rest"; $("#exn").textContent = s.w ? N(MV[s.m]) : "Rest. Next: " + N(MV[s.m]); $("#exh").textContent = s.w ? C(MV[s.m]) : "Shake out your arms and breathe."; $("#clock").textContent = mmss(t); mark(i); setMv(s); ringSet($("#lr"), 1 - t / s.t); if (t === s.t || t === 0) beep(s.w ? 780 : 420, .15); if (t === s.t) buzz(30) }, () => { stop = null; idle(1) })
+                };
+                let n = get("astraSessions", 2); n = +n || 2;
+                function wd() { $("#cnt").textContent = n; $("#wd").innerHTML = Array.from({ length: 5 }, (_, i) => `<i class="${i < n ? "on" : ""}">${i < n ? "✓" : ""}</i>`).join("") } wd();
+                lg.onclick = () => { n++; set("astraSessions", n); wd(); lg.hidden = true; award(50, "Circuit logged") }
+            },
+
+            head() {
+                breath($("#b1"), [["Breathe in", 4, 1], ["Hold", 4, 1], ["Breathe out", 4, .6], ["Hold", 4, .6]], 4);
+                const r = $("#fo"); r.innerHTML = '<p class="m">Tap each dot as soon as it appears. 8 taps.</p><div class="stat"><span class="chip">Taps: <b id="tp">0</b> / 8</span><span class="chip">Last: <b id="ls">-</b> ms</span><span class="chip">Best average: <b id="bs">-</b></span></div><div class="arena"></div><p class="fb" aria-live="polite">Press start</p><button class="btn">Start</button>';
+                const ar = r.children[2], fb = r.children[3], bt = r.children[4]; let n = 0, tot = 0, t0, best = get("astraBestTap", 0); if (best) $("#bs").textContent = best + " ms";
+                function next() {
+                    ar.innerHTML = ""; if (n === 8) { const a = Math.round(tot / 8), rate = a < 300 ? "Lightning reflexes" : a < 450 ? "Sharp focus" : "Warming up, try again"; let nb = ""; if (!best || a < best) { best = a; set("astraBestTap", a); $("#bs").textContent = a + " ms"; nb = " New best!" } fb.textContent = `Average reaction: ${a} ms. ${rate}.${nb}`; bt.textContent = "Play again"; bt.hidden = false; award(20, "Focus round done"); return }
+                    setTimeout(() => { const d = document.createElement("button"); d.className = "dot"; d.setAttribute("aria-label", "Tap"); d.style.left = Math.random() * 88 + "%"; d.style.top = Math.random() * 78 + "%"; t0 = performance.now(); d.onclick = () => { const rt = Math.round(performance.now() - t0); tot += rt; n++; $("#tp").textContent = n; $("#ls").textContent = rt; fb.textContent = n + " of 8"; const f = document.createElement("span"); f.className = "tapfx"; f.textContent = rt + " ms"; f.style.left = d.style.left; f.style.top = d.style.top; ar.appendChild(f); beep(500 + n * 60, .08); next() }; ar.appendChild(d) }, 400 + Math.random() * 800)
+                }
+                bt.onclick = () => { n = 0; tot = 0; bt.hidden = true; $("#tp").textContent = 0; fb.textContent = "Get ready"; next() }
+                checklist("#ck3", "#ck3b", ["Move to a well-ventilated area, away from crowded or closed-off modules", "Slow your breathing for 2 minutes (box breathing above)", "Drink a glass of water", "Rest your eyes and look at a distant point if you feel queasy or foggy", "Report high CO2 or a lasting headache to the flight surgeon"], "Checklist complete");
+            },
+
+            abdomen() {
+                let s = null; const tr = $("#wt"), av = $("#wa"), tw = document.querySelector(".track");
+                function pos(f) { tr.style.width = (f * 100) + "%"; av.style.left = `calc(${f * 100}% - ${f * 34}px)` } pos(0);
+                $("#wg").onclick = () => {
+                    if (s) { s(); s = null; $("#wg").textContent = "Start walk"; $("#wk").textContent = "10:00"; pos(0); return } $("#wg").textContent = "Stop";
+                    s = seq([{ t: 600 }], (x, i, t) => { $("#wk").textContent = mmss(t); pos(1 - t / 600) }, () => { s = null; $("#wk").textContent = "Done"; $("#wg").textContent = "Start walk"; pos(1); award(40, "Walk complete") })
+                }
+            },
+
+            sleep() {
+                breath($("#b2"), [["Breathe in", 4, 1], ["Hold", 7, 1], ["Breathe out", 8, .6]], 4);
+                const w = $("#win"); for (let i = 0; i < 14; i++) { const s = document.createElement("i"); s.style.left = Math.random() * 90 + "%"; s.style.top = Math.random() * 60 + "%"; s.style.animationDelay = Math.random() * 2 + "s"; w.appendChild(s) }
+                $("#lv").oninput = e => {
+                    const v = +e.target.value; $("#cab").style.background = `rgb(${v * 1.2 + 12},${v * .95 + 10},${v * .7 + 14})`; $("#lamp").style.background = v > 60 ? "#cfe3ff" : "#ffb36b"; $("#lamp").style.opacity = .15 + v / 130; $("#lvv").textContent = v + "%";
+                    $("#tip").textContent = v > 70 ? "Bright, cool light keeps you alert. Fine for the day." : v > 35 ? "Getting softer. A good time to start winding down." : "Dim and warm. Ideal for the hour before bed."
+                }; $("#lv").oninput({ target: $("#lv") });
+                const items = [["Lower the lights in your room", "Lower the cabin lights"], ["Put screens away"], ["Do the 4-7-8 breaths"], ["Get your bed ready and put in earplugs if you use them", "Settle your sleep restraint and earplugs"], ["Note tomorrow's first task"]]; let done = 0, paid = 0;
+                $("#ck").innerHTML = items.map((t, i) => `<label class="chk"><input type="checkbox" data-i="${i}"><span data-s="${t[0]}" data-o="${t[1] || t[0]}">${t[0]}</span></label>`).join("");
+                $("#ck").onchange = e => { e.target.closest(".chk").classList.toggle("on", e.target.checked); done = document.querySelectorAll("#ck input:checked").length; $("#ckb").style.width = done / items.length * 100 + "%"; beep(520 + done * 80, .1); if (done === items.length && !paid) { paid = 1; award(30, "Wind-down ready") } }
+            },
+
+            chest() {
+                let s = null; const g = $("#hg"), ht = $("#ht"), ec = $("#ec"), st = []; for (let i = 0; i < 6; i++)st.push({ w: 1, t: 30 }, { w: 0, t: 30 });
+                $("#hsg").innerHTML = st.map(x => `<i class="${x.w ? "" : "rest"}"></i>`).join(""); const sg = [...$("#hsg").children];
+                function pace(w) { ht.style.setProperty("--d", w ? ".45s" : ".9s"); ec.style.setProperty("--e", w ? "1s" : "1.8s") }
+                function hint(w, t) { const h = $("#hs"); h.className = "hint " + (w ? "h" : "e"); h.textContent = t }
+                g.onclick = () => {
+                    if (s) { s(); s = null; g.textContent = "Start intervals"; pace(0); hint(0, "Ready"); $("#hn").textContent = "Cardio intervals"; $("#hc").textContent = "6:00"; ringSet($("#hr"), 0); sg.forEach(e => e.classList.remove("on")); return } g.textContent = "Stop";
+                    s = seq(st, (x, i, t) => { $("#hn").textContent = (x.w ? "Hard" : "Easy") + ". Round " + (Math.floor(i / 2) + 1) + " of 6"; pace(x.w); hint(x.w, x.w ? "Push, but still speak in short phrases" : "Easy pace, recover"); $("#hc").textContent = mmss(t); ringSet($("#hr"), 1 - t / 30); sg.forEach((e, j) => e.classList.toggle("on", j <= i)); if (t === 30) { beep(x.w ? 820 : 440, .18); buzz(40) } },
+                        () => { s = null; g.textContent = "Start intervals"; $("#hn").textContent = "Intervals complete"; pace(0); hint(0, "Great work"); $("#hc").textContent = "0:00"; ringSet($("#hr"), 1); award(60, "Intervals complete") })
+                }
+                checklist("#ck4", "#ck4b", ["Sit up slowly and wait 30 seconds before you stand", "Do 20 ankle pumps (point and flex your feet)", "Squeeze your thigh and calf muscles for 10 seconds, 3 times", "Stand up slowly and hold a rail or surface", "Drink water or an electrolyte drink as your plan allows", "Sit down and tell the crew or flight surgeon if you feel faint"], "Stand-up routine done");
+            },
+
+            skin() {
+                breath($("#b3"), [["Breathe in", 4, 1], ["Breathe out", 6, .6]], 6);
+                let s = null; const g = $("#cg");
+                g.onclick = () => {
+                    if (s) { s(); s = null; g.textContent = "Start cool-down"; $("#cc").textContent = "5:00"; ringSet($("#cr"), 0); return } g.textContent = "Stop";
+                    s = seq([{ t: 300 }], (x, i, t) => { $("#cc").textContent = mmss(t); ringSet($("#cr"), 1 - t / 300) }, () => { s = null; g.textContent = "Start cool-down"; $("#cc").textContent = "Done"; ringSet($("#cr"), 1); award(30, "Cool-down complete") })
+                };
+                checklist("#ck5", "#ck5b", ["Check the cabin temperature and vents, then adjust your layers", "Take off a layer or move away from heat sources", "Sip cool water", "Rest for 10 minutes", "Measure your temperature again after 30 minutes", "Message the flight surgeon if it stays high or you feel unwell"], "Cooling checklist done");
+            }
+        };
+        show(id);
+        try { if (sessionStorage.astraBack === "results" && sessionStorage.astraV) { const a = $("#back"); a.href = "index.html#results"; a.textContent = "Back to body report" } } catch (e) { }
+    </script>
+</body>
+
+</html>

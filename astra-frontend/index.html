@@ -1,0 +1,3362 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ASTRA crew health dashboard</title>
+  <script src="dashboard-live.js"></script>
+  <style>
+    :root {
+      --bg: #050a18;
+      --panel: rgba(9, 16, 38, .8);
+      --line: rgba(120, 150, 230, .22);
+      --ink: #eaf0ff;
+      --mute: #8fa0c9;
+      --blue: #4a8bff;
+      --ok: #3ddc97;
+      --watch: #ffb020;
+      --act: #ff4d4d
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: auto
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.55 "Helvetica Neue", Arial, sans-serif
+    }
+
+    .mono {
+      font-family: "SF Mono", Consolas, monospace
+    }
+
+    .ok {
+      color: var(--ok)
+    }
+
+    .watch {
+      color: var(--watch)
+    }
+
+    .act {
+      color: var(--act)
+    }
+
+    #nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      font-size: 13px;
+      color: var(--mute);
+      background: linear-gradient(rgba(3, 6, 15, .7), transparent);
+      pointer-events: none
+    }
+
+    #nav b {
+      color: var(--ink);
+      font-weight: 500;
+      letter-spacing: .12em
+    }
+
+    #track {
+      height: 480vh;
+      position: relative
+    }
+
+    #stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: #000
+    }
+
+    #stars {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%
+    }
+
+    #imgwrap {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 50% 100%;
+      will-change: transform, opacity;
+      opacity: 0
+    }
+
+    #imgwrap img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      user-select: none;
+      -webkit-user-drag: none
+    }
+
+    .vig {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0, 0, 0, .55))
+    }
+
+    #fade {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: var(--bg);
+      opacity: 0
+    }
+
+    #hero {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      padding: 0 24px;
+      pointer-events: none
+    }
+
+    #hero h1 {
+      margin: 0;
+      font-weight: 200;
+      font-size: clamp(52px, 10vw, 132px);
+      letter-spacing: .32em;
+      text-indent: .32em;
+      line-height: 1
+    }
+
+    #hero p {
+      margin: 18px 0 0;
+      color: var(--mute);
+      font-size: clamp(14px, 1.6vw, 18px)
+    }
+
+    .cue {
+      pointer-events: none;
+      position: absolute;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .cue i {
+      display: block;
+      width: 1px;
+      height: 38px;
+      margin: 8px auto 0;
+      background: linear-gradient(var(--ink), transparent);
+      animation: cue 2s ease-in-out infinite
+    }
+
+    @keyframes cue {
+      0% {
+        transform: scaleY(0);
+        transform-origin: top
+      }
+
+      50% {
+        transform: scaleY(1);
+        transform-origin: top
+      }
+
+      51% {
+        transform-origin: bottom
+      }
+
+      100% {
+        transform: scaleY(0);
+        transform-origin: bottom
+      }
+    }
+
+    .chap {
+      position: absolute;
+      left: clamp(20px, 5vw, 72px);
+      top: clamp(84px, 15vh, 150px);
+      max-width: 380px;
+      opacity: 0;
+      pointer-events: none;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: linear-gradient(rgba(3, 6, 15, .75), rgba(3, 6, 15, .45));
+      text-shadow: 0 1px 12px #000
+    }
+
+    .chap small {
+      color: var(--blue);
+      font-size: 13px
+    }
+
+    .chap h2 {
+      margin: 4px 0 8px;
+      font-weight: 300;
+      font-size: clamp(26px, 3.4vw, 44px);
+      line-height: 1.12
+    }
+
+    .chap p {
+      margin: 0;
+      color: #b8c5e6;
+      font-size: 15px
+    }
+
+    #pins .pin {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      background: none;
+      border: 0;
+      padding: 0;
+      color: var(--ink);
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .dot {
+      display: block;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid currentColor;
+      background: rgba(3, 6, 15, .5);
+      animation: pp 2.2s infinite
+    }
+
+    .pin.sel .dot {
+      background: currentColor
+    }
+
+    .lab {
+      position: absolute;
+      left: 26px;
+      top: -4px;
+      white-space: nowrap;
+      font-size: 12px;
+      color: var(--ink);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      padding: 1px 8px;
+      backdrop-filter: blur(4px)
+    }
+
+    @keyframes pp {
+      0% {
+        box-shadow: 0 0 0 0 currentColor
+      }
+
+      70%,
+      100% {
+        box-shadow: 0 0 0 14px transparent
+      }
+    }
+
+    #panel {
+      position: fixed;
+      z-index: 30;
+      right: 20px;
+      top: 76px;
+      width: 350px;
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px;
+      display: none
+    }
+
+    #panel h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500
+    }
+
+    .func {
+      color: var(--mute);
+      margin: 2px 0 12px;
+      font-size: 14px
+    }
+
+    #panel .x {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      background: none;
+      border: 0;
+      color: var(--mute);
+      font-size: 22px;
+      cursor: pointer
+    }
+
+    .badge {
+      display: inline-flex;
+      gap: 8px;
+      border: 1px solid currentColor;
+      border-radius: 4px;
+      padding: 2px 10px;
+      font-weight: 600;
+      font-size: 13px
+    }
+
+    .read {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 14px 0;
+      padding: 12px;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--line);
+      border-radius: 8px
+    }
+
+    .v {
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1
+    }
+
+    .u {
+      font-size: 13px;
+      color: var(--mute);
+      margin-left: 5px;
+      font-weight: 400
+    }
+
+    .rg {
+      font-size: 12px;
+      color: var(--mute);
+      margin-top: 4px
+    }
+
+    .read svg {
+      width: 120px;
+      height: 44px
+    }
+
+    dl {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      font-size: 14px
+    }
+
+    dt {
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    dd {
+      margin: 2px 0 0
+    }
+
+    .esc {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-left: 4px solid var(--act);
+      background: rgba(255, 77, 77, .1);
+      font-size: 14px
+    }
+
+    main {
+      position: relative;
+      z-index: 2;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 8px 24px 40px
+    }
+
+    .top {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 28px
+    }
+
+    .ring {
+      width: 150px;
+      height: 150px;
+      position: relative
+    }
+
+    .ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg)
+    }
+
+    .ring b {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      text-align: center;
+      font-size: 34px;
+      font-weight: 500;
+      line-height: 1
+    }
+
+    .ring b small {
+      font-size: 12px;
+      color: var(--mute);
+      font-weight: 400
+    }
+
+    .top h2 {
+      margin: 0;
+      font-weight: 300;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.1
+    }
+
+    .top p {
+      margin: 6px 0 0;
+      color: var(--mute);
+      max-width: 520px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 16px
+    }
+
+    .card {
+      background: linear-gradient(160deg, rgba(18, 30, 66, .7), rgba(9, 16, 38, .7));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px
+    }
+
+    .card .h {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500
+    }
+
+    .card .v {
+      font-size: 38px;
+      margin-top: 10px
+    }
+
+    .card .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 10px
+    }
+
+    .card svg {
+      width: 130px;
+      height: 46px
+    }
+
+    .card p {
+      margin: 10px 0 0;
+      color: #b8c5e6;
+      font-size: 14px
+    }
+
+    .card .rg {
+      margin-top: 2px
+    }
+
+    .wide {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px
+    }
+
+    .box {
+      background: linear-gradient(160deg, rgba(18, 30, 66, .7), rgba(9, 16, 38, .7));
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 18px
+    }
+
+    .box h3 {
+      margin: 0 0 4px;
+      font-size: 16px;
+      font-weight: 500
+    }
+
+    .box>p {
+      margin: 0 0 10px;
+      color: var(--mute);
+      font-size: 13px
+    }
+
+    #chart {
+      width: 100%;
+      height: auto
+    }
+
+    .lg {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--mute);
+      margin-top: 6px
+    }
+
+    ul.acts {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: 10px;
+      font-size: 14px
+    }
+
+    ul.acts li {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start
+    }
+
+    ul.acts input {
+      margin-top: 4px;
+      accent-color: var(--blue)
+    }
+
+    .chk label {
+      display: block;
+      font-size: 13px;
+      color: var(--mute);
+      margin-top: 10px
+    }
+
+    .chk input[type=range] {
+      width: 100%;
+      accent-color: var(--blue)
+    }
+
+    .chk output {
+      color: var(--ink)
+    }
+
+    .chk button {
+      margin-top: 14px;
+      background: var(--blue);
+      color: #fff;
+      border: 0;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    footer {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 10px 24px 34px;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    @media(max-width:820px) {
+      .wide {
+        grid-template-columns: 1fr
+      }
+
+      #panel {
+        left: 10px;
+        right: 10px;
+        width: auto;
+        top: auto;
+        bottom: 10px;
+        max-height: 52vh
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      .dot,
+      .cue i {
+        animation: none
+      }
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    #nav button {
+      pointer-events: auto;
+      background: none;
+      border: 0;
+      color: var(--ink);
+      font: inherit;
+      cursor: pointer
+    }
+
+    #nav .start {
+      background: var(--blue);
+      color: #fff;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      margin-left: 14px
+    }
+
+    #nav .mono {
+      pointer-events: none
+    }
+
+    .cta {
+      background: var(--blue);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 14px 26px;
+      font: inherit;
+      font-size: 17px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 30px rgba(74, 139, 255, .35)
+    }
+
+    .ready {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 28px
+    }
+
+    .view {
+      min-height: 100vh;
+      padding: 84px 20px 48px;
+      background: var(--bg)
+    }
+
+    .wrap {
+      max-width: 1040px;
+      margin: 0 auto
+    }
+
+    .prog {
+      height: 4px;
+      background: rgba(120, 150, 230, .2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0 0 22px
+    }
+
+    .prog i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--blue);
+      transition: width .4s
+    }
+
+    .crumb {
+      color: var(--blue);
+      font-size: 13px
+    }
+
+    .view h2 {
+      margin: 4px 0 6px;
+      font-weight: 300;
+      font-size: clamp(26px, 4vw, 40px)
+    }
+
+    .sub {
+      color: var(--mute);
+      margin: 0 0 20px;
+      max-width: 640px
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px
+    }
+
+    .box ol {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 8px;
+      color: #c6d2ee;
+      font-size: 15px
+    }
+
+    .fld {
+      display: grid;
+      gap: 6px;
+      margin: 12px 0
+    }
+
+    .fld label {
+      font-size: 14px;
+      color: var(--mute)
+    }
+
+    .fld input[type=number] {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      font: inherit;
+      font-size: 22px;
+      padding: 10px 12px;
+      width: 100%
+    }
+
+    .fld input[type=range] {
+      width: 100%;
+      accent-color: var(--blue)
+    }
+
+    .fld output {
+      font-size: 24px
+    }
+
+    .err {
+      color: var(--act);
+      font-size: 13px;
+      min-height: 18px
+    }
+
+    .nav2 {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, .08);
+      color: var(--ink);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 18px;
+      font: inherit;
+      cursor: pointer
+    }
+
+    .btn:disabled {
+      opacity: .4;
+      cursor: default
+    }
+
+    .btn.p {
+      background: var(--blue);
+      border-color: var(--blue);
+      font-weight: 600
+    }
+
+    .btn.act {
+      background: var(--act);
+      border-color: var(--act);
+      font-weight: 600;
+      color: #fff
+    }
+
+    .center {
+      text-align: center;
+      padding-top: 14vh
+    }
+
+    .spin {
+      width: 64px;
+      height: 64px;
+      border: 4px solid rgba(120, 150, 230, .25);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      margin: 0 auto 22px;
+      animation: sp 1s linear infinite
+    }
+
+    @keyframes sp {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .res {
+      display: grid;
+      grid-template-columns: minmax(380px, 560px) 1fr;
+      gap: 22px;
+      align-items: start
+    }
+
+    #fwrap {
+      background: radial-gradient(circle at 50% 30%, #13214f, #070d20);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      justify-content: center
+    }
+
+    #fwrap svg {
+      width: 100%;
+      max-width: 330px;
+      height: auto
+    }
+
+    .zone {
+      cursor: pointer;
+      fill-opacity: .15;
+      stroke-width: 2;
+      transition: fill-opacity .2s
+    }
+
+    .zone:hover,
+    .zone:focus {
+      fill-opacity: .3;
+      outline: none
+    }
+
+    .zone.sel {
+      fill-opacity: .34;
+      stroke-width: 3
+    }
+
+    .s-ok {
+      fill: var(--ok);
+      stroke: var(--ok)
+    }
+
+    .s-watch {
+      fill: var(--watch);
+      stroke: var(--watch)
+    }
+
+    .s-act {
+      fill: var(--act);
+      stroke: var(--act)
+    }
+
+    .bones {
+      display: none
+    }
+
+    .met {
+      padding: 12px 0;
+      border-top: 1px solid var(--line)
+    }
+
+    .met .t {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px
+    }
+
+    .met b {
+      font-weight: 500
+    }
+
+    .met .v {
+      font-size: 26px
+    }
+
+    .chip {
+      font-size: 12px;
+      border: 1px solid currentColor;
+      border-radius: 999px;
+      padding: 1px 9px;
+      white-space: nowrap
+    }
+
+    .bar {
+      position: relative;
+      height: 8px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .1);
+      margin: 10px 0 4px
+    }
+
+    .bar .n {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      background: rgba(61, 220, 151, .5);
+      border-radius: 4px
+    }
+
+    .bar .mk {
+      position: absolute;
+      top: -4px;
+      width: 4px;
+      height: 16px;
+      border-radius: 2px;
+      background: #fff;
+      transform: translateX(-2px)
+    }
+
+    .note {
+      margin-top: 12px;
+      color: var(--ok);
+      font-size: 14px
+    }
+
+    .ex {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: center
+    }
+
+    .ringt {
+      position: relative;
+      width: 150px;
+      height: 150px
+    }
+
+    .ringt svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg)
+    }
+
+    .ringt b {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-content: center;
+      font-size: 38px;
+      font-weight: 500
+    }
+
+    .stats {
+      display: flex;
+      gap: 22px;
+      margin: 14px 0;
+      font-size: 14px;
+      color: var(--mute)
+    }
+
+    .stats b {
+      display: block;
+      font-size: 26px;
+      color: var(--ink);
+      font-weight: 500
+    }
+
+    .sf {
+      width: 100%;
+      max-width: 230px;
+      display: block;
+      margin: 0 auto
+    }
+
+    .sf line,
+    .sf circle {
+      stroke: #dfe8ff;
+      stroke-width: 6;
+      stroke-linecap: round;
+      fill: none
+    }
+
+    .sf circle {
+      fill: #dfe8ff
+    }
+
+    .sf g {
+      transform-box: view-box
+    }
+
+    #aL,
+    #aR {
+      transform-origin: 100px 75px
+    }
+
+    #lL,
+    #lR,
+    #bd {
+      transform-origin: 100px 140px
+    }
+
+    @keyframes aUp {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      50% {
+        transform: rotate(170deg)
+      }
+    }
+
+    @keyframes aUpR {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      50% {
+        transform: rotate(-170deg)
+      }
+    }
+
+    @keyframes lgL {
+
+      0%,
+      100% {
+        transform: rotate(0)
+      }
+
+      15%,
+      35% {
+        transform: rotate(38deg)
+      }
+
+      50% {
+        transform: rotate(0)
+      }
+    }
+
+    @keyframes lgR {
+
+      0%,
+      50% {
+        transform: rotate(0)
+      }
+
+      65%,
+      85% {
+        transform: rotate(-38deg)
+      }
+
+      100% {
+        transform: rotate(0)
+      }
+    }
+
+    @keyframes sq {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(32px)
+      }
+    }
+
+    @keyframes sqL {
+
+      0%,
+      100% {
+        transform: scaleY(1)
+      }
+
+      50% {
+        transform: scaleY(.62)
+      }
+    }
+
+    @keyframes cr {
+
+      0%,
+      100% {
+        transform: translateY(0)
+      }
+
+      50% {
+        transform: translateY(-14px)
+      }
+    }
+
+    .m-arms #aL {
+      animation: aUp 3s ease-in-out infinite
+    }
+
+    .m-arms #aR {
+      animation: aUpR 3s ease-in-out infinite
+    }
+
+    .m-legs #lL {
+      animation: lgL 3s ease-in-out infinite
+    }
+
+    .m-legs #lR {
+      animation: lgR 3s ease-in-out infinite
+    }
+
+    .m-squat #bd {
+      animation: sq 3s ease-in-out infinite
+    }
+
+    .m-squat #lL,
+    .m-squat #lR {
+      animation: sqL 3s ease-in-out infinite
+    }
+
+    .m-calf #bd {
+      animation: cr 3s ease-in-out infinite
+    }
+
+    @media(max-width:820px) {
+
+      .two,
+      .res,
+      .ex {
+        grid-template-columns: 1fr
+      }
+    }
+
+    /* ---------- full-body analysis: transparent human body with labelled, clickable areas that light up ---------- */
+    #fwrap {
+      align-items: center;
+      padding: 20px 8px 26px
+    }
+
+    .res>* {
+      min-width: 0
+    }
+
+    .afig {
+      position: relative;
+      max-width: 100%;
+      width: min(100%, calc(min(72vh, 640px) * 1160 / 1140));
+      aspect-ratio: 1160/1140
+    }
+
+    #fwrap #azones {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      overflow: visible
+    }
+
+    #azones .bodybase {
+      filter: brightness(.58) saturate(.75);
+      pointer-events: none
+    }
+
+    #azones .zlit {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease
+    }
+
+    #azones .zlit image {
+      filter: brightness(1.55) saturate(1.35) drop-shadow(0 0 5px var(--c)) drop-shadow(0 0 16px var(--c))
+    }
+
+    #azones .zlit.sel,
+    #azones .zlit.hv {
+      opacity: 1
+    }
+
+    #azones .zlit.s-ok {
+      --c: var(--ok)
+    }
+
+    #azones .zlit.s-watch {
+      --c: var(--watch)
+    }
+
+    #azones .zlit.s-act {
+      --c: var(--act)
+    }
+
+    #azones .zone {
+      stroke: none;
+      fill-opacity: 0;
+      cursor: pointer;
+      outline: none
+    }
+
+    #fwrap .zl {
+      stroke-width: 1.6;
+      stroke-opacity: .45;
+      fill: none;
+      pointer-events: none;
+      transition: stroke-opacity .2s
+    }
+
+    #fwrap .zl.sel,
+    #fwrap .zl.hv {
+      stroke-opacity: 1;
+      stroke-width: 2.4
+    }
+
+    #fwrap .zd {
+      stroke: none;
+      pointer-events: none
+    }
+
+    #fwrap .zp {
+      fill: none;
+      stroke-width: 1.5;
+      pointer-events: none;
+      opacity: 0
+    }
+
+    .zd.sel+.zp {
+      animation: zpulse 1.8s ease-out infinite
+    }
+
+    @keyframes zpulse {
+      from {
+        opacity: .9;
+        r: 6
+      }
+
+      to {
+        opacity: 0;
+        r: 26
+      }
+    }
+
+    .albl {
+      position: absolute;
+      transform: translateY(-50%);
+      width: 19.5%;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: clamp(10.5px, 2.4vw, 12.5px);
+      line-height: 1.2;
+      color: var(--text, #e8eeff);
+      background: rgba(10, 16, 36, .72);
+      border: 1px solid var(--c, rgba(255, 255, 255, .25));
+      border-left-width: 3px;
+      border-radius: 8px;
+      padding: 6px 7px;
+      cursor: pointer;
+      transition: background .2s, box-shadow .2s
+    }
+
+    .albl.L {
+      right: 80.2%;
+      text-align: right;
+      border-left-width: 1px;
+      border-right-width: 3px
+    }
+
+    .albl.R {
+      left: 80.2%;
+      text-align: left
+    }
+
+    .albl.s-ok {
+      --c: var(--ok)
+    }
+
+    .albl.s-watch {
+      --c: var(--watch)
+    }
+
+    .albl.s-act {
+      --c: var(--act)
+    }
+
+    .albl:hover,
+    .albl.hv,
+    .albl.sel {
+      background: rgba(20, 30, 62, .95);
+      box-shadow: 0 0 14px var(--c, #4a8bff)
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+      .zd.sel+.zp {
+        animation: none
+      }
+
+      #azones .zlit {
+        transition: none
+      }
+    }
+
+    @media(max-width:560px) {
+      .albl {
+        padding: 5px 4px;
+        font-size: 10px
+      }
+    }
+
+    .albl:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px
+    }
+
+    .tile {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 6px 12px;
+      text-align: center;
+      min-width: 78px;
+      font: inherit;
+      cursor: pointer
+    }
+
+    .tile[aria-pressed=true] {
+      border-color: #4a78d6;
+      background: rgba(74, 139, 255, .12)
+    }
+
+    .tile span {
+      display: block;
+      font-size: 11px;
+      color: var(--mute)
+    }
+
+    .tile i {
+      font-style: normal;
+      font-size: 10px;
+      margin-right: 4px
+    }
+
+    #rp dl {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line)
+    }
+
+    #rp .trend {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px
+    }
+
+    #rp .trend svg {
+      width: 130px;
+      height: 46px
+    }
+
+    .exgo {
+      display: inline-block;
+      margin-top: 6px;
+      background: none;
+      border: 0;
+      padding: 0;
+      color: var(--blue);
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: underline
+    }
+
+    #nasa,
+    #rp {
+      font-family: "Atkinson Hyperlegible", "Segoe UI", Verdana, sans-serif
+    }
+
+    #nasa .kick,
+    #nasa .vh,
+    #nasa .nhead,
+    #nasa .nl,
+    #rp h3,
+    #rp .mh {
+      font-family: "Bricolage Grotesque", "Avenir Next", "Trebuchet MS", sans-serif
+    }
+
+    #nasa .kick {
+      font-size: 14px;
+      color: var(--mute);
+      letter-spacing: .02em
+    }
+
+    #nasa .vh {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: clamp(28px, 3.4vw, 38px);
+      font-weight: 700;
+      line-height: 1.1;
+      margin: 8px 0 4px
+    }
+
+    #nasa .vh i {
+      font-style: normal;
+      font-size: .7em
+    }
+
+    #nasa .vh.ok {
+      color: var(--ok)
+    }
+
+    #nasa .vh.watch {
+      color: var(--watch)
+    }
+
+    #nasa .vh.act {
+      color: var(--act)
+    }
+
+    #nasa .vs {
+      font-size: 18px;
+      color: #dbe4fa;
+      margin: 0 0 14px
+    }
+
+    #nasa p {
+      margin: 6px 0;
+      font-size: 16px;
+      line-height: 1.6;
+      color: #cdd8f2;
+      max-width: 64ch
+    }
+
+    #nasa .nx {
+      background: rgba(74, 139, 255, .12);
+      border: 1px solid rgba(74, 139, 255, .35);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin: 0 0 14px
+    }
+
+    #nasa .nl {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px
+    }
+
+    #nasa .nx ol {
+      margin: 0;
+      padding-left: 22px
+    }
+
+    #nasa .nx li {
+      margin: 6px 0;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink)
+    }
+
+    #nasa .nc {
+      border-left: 5px solid var(--line);
+      background: rgba(255, 255, 255, .035);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin: 10px 0
+    }
+
+    #nasa .nc.ok {
+      border-color: var(--ok)
+    }
+
+    #nasa .nc.watch {
+      border-color: var(--watch)
+    }
+
+    #nasa .nc.act {
+      border-color: var(--act)
+    }
+
+    #nasa .nh {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 14px;
+      color: var(--mute)
+    }
+
+    #nasa .nh b {
+      color: var(--ink);
+      font-weight: 600
+    }
+
+    #nasa .nhead {
+      font-size: 22px;
+      font-weight: 600;
+      line-height: 1.2;
+      margin: 4px 0 2px;
+      color: var(--ink)
+    }
+
+    #nasa .nd {
+      color: var(--ink)
+    }
+
+    #nasa .fine {
+      font-size: 14px;
+      color: var(--mute);
+      margin-top: 12px
+    }
+
+    #nasa details {
+      margin-top: 8px
+    }
+
+    #nasa summary {
+      cursor: pointer;
+      color: #9db8ff;
+      font-size: 14px
+    }
+
+    #nasa .an {
+      font-family: 'Bricolage Grotesque', 'Avenir Next', sans-serif;
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    #nasa .nh b {
+      font-size: 14px
+    }
+
+    #nasa .sb {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(120, 150, 230, .15)
+    }
+
+    #nasa .tg {
+      display: inline-block;
+      margin-left: 10px;
+      font: 12px 'Atkinson Hyperlegible', sans-serif;
+      color: var(--mute);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 1px 9px;
+      vertical-align: middle
+    }
+
+    #nasa .fine2 {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #aab8dc
+    }
+
+    #nasa .src {
+      font-size: 13px;
+      color: var(--mute);
+      line-height: 1.5
+    }
+
+    #nasa a {
+      color: #9db8ff
+    }
+
+    #rp .mh {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 6px 0 2px
+    }
+
+    #rp .mb {
+      font-size: 15px;
+      line-height: 1.55;
+      color: #cdd8f2;
+      margin: 2px 0
+    }
+
+    #rp details {
+      margin-top: 6px
+    }
+
+    #rp summary {
+      cursor: pointer;
+      color: #9db8ff;
+      font-size: 13px
+    }
+
+    #rp .src {
+      font-size: 12.5px;
+      color: var(--mute);
+      line-height: 1.5;
+      margin: 4px 0
+    }
+
+    #rp a {
+      color: #9db8ff
+    }
+
+    /* intro block between hero and dashboard */
+    .intro {
+      padding: clamp(56px, 10vh, 96px) 0 0;
+      margin-bottom: 28px
+    }
+
+    .intro .eyebrow {
+      display: block;
+      color: var(--blue);
+      font-size: 13px;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      margin-bottom: 10px
+    }
+
+    .intro h2 {
+      margin: 0;
+      font-weight: 300;
+      font-size: clamp(26px, 4vw, 40px);
+      line-height: 1.1
+    }
+
+    .intro .sub {
+      margin: 12px 0 0;
+      max-width: 640px
+    }
+
+    #crewbox {
+      margin-bottom: 28px
+    }
+
+    /* crew panel + prediction module (added) */
+    .badge.none {
+      color: var(--mute)
+    }
+
+    .crew {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 12px;
+      margin-top: 10px
+    }
+
+    .cm {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, .03);
+      cursor: pointer
+    }
+
+    .cm.cur {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 1px var(--blue) inset
+    }
+
+    .cm .cmh {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px
+    }
+
+    .cm .cmh b {
+      font-weight: 500;
+      font-size: 17px
+    }
+
+    .cm ul {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 13px;
+      color: #b8c5e6;
+      display: grid;
+      gap: 3px
+    }
+
+    .cm .cmb {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap
+    }
+
+    .cm .btn {
+      padding: 7px 12px;
+      font-size: 14px
+    }
+
+    .cmsum {
+      font-size: 13px;
+      color: var(--mute);
+      margin: 2px 0 0
+    }
+
+
+    /* short prediction view (pv-*) */
+    .pv-hero {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 14px 16px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(74, 139, 255, .10), rgba(255, 255, 255, .02))
+    }
+
+    .pv-ring {
+      --c: var(--ok);
+      --p: 100;
+      flex: none;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--c) calc(var(--p) * 1%), rgba(255, 255, 255, .10) 0)
+    }
+
+    .pv-ring>div {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: #0a1330;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      line-height: 1.1
+    }
+
+    .pv-ring b {
+      font-size: 20px;
+      font-weight: 600
+    }
+
+    .pv-ring small {
+      display: block;
+      font-size: 10.5px;
+      color: var(--mute)
+    }
+
+    .pv-hero h4 {
+      margin: 0 0 2px;
+      font-size: 20px;
+      font-weight: 600
+    }
+
+    .pv-hero p {
+      margin: 0;
+      font-size: 14px;
+      color: #c6d2ee
+    }
+
+    .pv-h {
+      margin: 18px 0 8px;
+      font-size: 13px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--mute);
+      font-weight: 600
+    }
+
+    .pv-cards {
+      display: grid;
+      gap: 10px
+    }
+
+    .pv-card {
+      --c: var(--watch);
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 12px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--c);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .03)
+    }
+
+    .pv-card.act {
+      --c: var(--act)
+    }
+
+    .pv-card.watch {
+      --c: var(--watch)
+    }
+
+    .pv-ic {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      color: var(--c);
+      background: color-mix(in srgb, var(--c) 16%, transparent)
+    }
+
+    .pv-card .t {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 10px;
+      align-items: baseline
+    }
+
+    .pv-card .t b {
+      font-weight: 600;
+      font-size: 16px
+    }
+
+    .pv-card .t span {
+      font-size: 12.5px;
+      color: var(--mute)
+    }
+
+    .pv-card p {
+      margin: 3px 0 0;
+      font-size: 14px;
+      color: #c6d2ee
+    }
+
+    .pv-do {
+      margin-top: 8px !important;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(74, 139, 255, .10);
+      color: var(--ink) !important
+    }
+
+    .pv-do::before {
+      content: "Try this: ";
+      font-weight: 600;
+      color: #9cc0ff
+    }
+
+    .pv-spark {
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .pv-spark:empty {
+      display: none
+    }
+
+    .pv-spark svg {
+      width: 140px;
+      height: 32px;
+      flex: none
+    }
+
+    .pv-more {
+      margin: 10px 0 0;
+      font-size: 13px;
+      color: var(--mute)
+    }
+
+    .pv-fine {
+      margin-top: 16px
+    }
+
+    .pv-fine summary {
+      cursor: pointer;
+      color: #9fe3c4;
+      font-size: 14px
+    }
+
+    .pv-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px
+    }
+
+    .pv-chips span {
+      font-size: 12.5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      color: #7fd0ae;
+      background: rgba(95, 174, 142, .14)
+    }
+
+    .pv-foot {
+      margin: 16px 0 0;
+      font-size: 12.5px;
+      color: var(--mute)
+    }
+
+    @media (max-width: 520px) {
+      .pv-hero {
+        flex-direction: column;
+        text-align: center
+      }
+
+      .pv-spark svg {
+        width: 110px
+      }
+    }
+
+    #pred h3 {
+      margin: 0 0 4px
+    }
+
+    .pd-int {
+      margin: 6px 0 10px;
+      padding-left: 18px;
+      color: #c6d2ee;
+      font-size: 14px;
+      display: grid;
+      gap: 4px
+    }
+
+    .pd-a {
+      margin-top: 14px;
+      border-top: 1px solid var(--line);
+      padding-top: 10px
+    }
+
+    .pd-a>b {
+      font-weight: 500
+    }
+
+    .pd-r {
+      margin: 10px 0;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .03)
+    }
+
+    .pd-h {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: baseline
+    }
+
+    .pd-h b {
+      font-weight: 500
+    }
+
+    .pd-p {
+      margin: 4px 0 6px;
+      font-size: 14px;
+      color: #dbe5ff
+    }
+
+    .pd-c {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed var(--line)
+    }
+
+    .pd-c p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: #b8c5e6
+    }
+
+    .pd-t {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center
+    }
+
+    .pd-t .tg {
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .pd-n {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .pd-n p {
+      margin: 4px 0
+    }
+
+    .pd-f {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--mute)
+    }
+
+    .rcta {
+      margin-top: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap
+    }
+
+    .rcta h3 {
+      margin: 0 0 4px
+    }
+
+    .rcta p {
+      margin: 0;
+      color: var(--mute);
+      font-size: 14px;
+      max-width: 46ch
+    }
+
+    /* =====================================================================
+   ASTRA dark redesign: one palette shared with exercises.html
+   deep navy page, glass panels, calm status colours, blue accent
+   (keep this block LAST in <style>)
+   ===================================================================== */
+    :root {
+      --bg: #070b16;
+      --panel: rgba(18, 25, 44, .72);
+      --line: rgba(150, 165, 200, .2);
+      --ink: #ecf0f7;
+      --mute: #98a3bd;
+      --blue: #6f93d6;
+      --ok: #5fae8e;
+      --watch: #d9a441;
+      --act: #e0705a;
+      --card: linear-gradient(165deg, rgba(24, 34, 60, .82), rgba(13, 19, 36, .86));
+      --sh: 0 1px 2px rgba(0, 0, 0, .35), 0 14px 34px -10px rgba(0, 0, 0, .55);
+      --head: "Bricolage Grotesque", "Avenir Next", "Trebuchet MS", sans-serif;
+      --body: "Atkinson Hyperlegible", "Segoe UI", Verdana, sans-serif;
+      --on-acc: #07101f;
+    }
+
+    body {
+      background: var(--bg)
+    }
+
+    #content,
+    #app,
+    footer {
+      font-family: var(--body)
+    }
+
+    #app {
+      background: var(--bg)
+    }
+
+    .view {
+      background: radial-gradient(1100px 650px at 80% -10%, #111a30 0%, transparent 60%), var(--bg)
+    }
+
+    main#content {
+      padding-bottom: 64px
+    }
+
+    #home {
+      background: var(--bg)
+    }
+
+    /* headings */
+    #content h2,
+    #content h3,
+    .view h2,
+    .view h3 {
+      font-family: var(--head);
+      letter-spacing: -.02em
+    }
+
+    .intro h2,
+    .top h2,
+    .view h2 {
+      font-weight: 600
+    }
+
+    .box h3,
+    .card h3,
+    #rp h3,
+    .rcta h3 {
+      font-weight: 600
+    }
+
+    .intro .eyebrow,
+    .crumb {
+      color: #8fb0ea;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-size: 12px
+    }
+
+    .intro h2 {
+      font-size: clamp(30px, 4.6vw, 52px);
+      letter-spacing: -.025em
+    }
+
+    .intro .sub {
+      font-size: 17px;
+      color: var(--mute)
+    }
+
+    .sub,
+    .top p {
+      color: var(--mute)
+    }
+
+    /* nav: glass once you leave the hero */
+    #nav {
+      transition: background .3s, box-shadow .3s, border-color .3s;
+      border-bottom: 1px solid transparent
+    }
+
+    #nav.solid {
+      background: rgba(7, 11, 22, .86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom-color: var(--line)
+    }
+
+    #nav .start {
+      background: var(--blue);
+      color: var(--on-acc);
+      border-radius: 999px;
+      padding: 8px 18px;
+      box-shadow: 0 4px 16px rgba(111, 147, 214, .35)
+    }
+
+    #nav button:focus-visible {
+      outline: 2px solid #9db8ff;
+      outline-offset: 3px
+    }
+
+    /* panels */
+    .box,
+    .card,
+    .top {
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: var(--sh);
+      border-radius: 20px
+    }
+
+    .box,
+    .card {
+      padding: 22px
+    }
+
+    .top {
+      padding: 24px 30px;
+      gap: 32px
+    }
+
+    #crewbox {
+      border-radius: 22px
+    }
+
+    #crewbox h3 {
+      font-size: 22px
+    }
+
+    .box>p,
+    .cmsum,
+    .rg {
+      color: var(--mute)
+    }
+
+    .card {
+      position: relative;
+      overflow: hidden;
+      transition: transform .2s, box-shadow .2s, border-color .2s
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(150, 165, 200, .38)
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      height: 3px;
+      background: var(--line)
+    }
+
+    .card:has(.badge.ok)::before {
+      background: var(--ok)
+    }
+
+    .card:has(.badge.watch)::before {
+      background: var(--watch)
+    }
+
+    .card:has(.badge.act)::before {
+      background: var(--act)
+    }
+
+    .card .v,
+    .read .v,
+    .met .v {
+      font-family: var(--head);
+      font-weight: 700;
+      letter-spacing: -.03em
+    }
+
+    .card .v {
+      font-size: 44px
+    }
+
+    .card .u {
+      font-family: var(--body);
+      letter-spacing: 0
+    }
+
+    .grid {
+      gap: 18px
+    }
+
+    /* status pills */
+    .badge,
+    .chip {
+      border: 0;
+      font-weight: 700;
+      letter-spacing: .01em
+    }
+
+    .badge {
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 12.5px
+    }
+
+    .chip {
+      border-radius: 999px;
+      padding: 2px 10px
+    }
+
+    .badge.ok,
+    .chip.ok {
+      color: #7fd0ae;
+      background: rgba(95, 174, 142, .16)
+    }
+
+    .badge.watch,
+    .chip.watch {
+      color: #ecbc5c;
+      background: rgba(217, 164, 65, .16)
+    }
+
+    .badge.act,
+    .chip.act {
+      color: #f08a74;
+      background: rgba(224, 112, 90, .18)
+    }
+
+    .badge.none {
+      color: var(--mute);
+      background: rgba(255, 255, 255, .07)
+    }
+
+    .badge[data-ex]:hover {
+      background-image: linear-gradient(rgba(255, 255, 255, .08), rgba(255, 255, 255, .08))
+    }
+
+    /* crew cards */
+    .cm {
+      border-radius: 16px;
+      padding: 16px;
+      background: rgba(255, 255, 255, .035);
+      transition: border-color .15s, background .15s, transform .15s
+    }
+
+    .cm:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, .06)
+    }
+
+    .cm.cur {
+      border-color: var(--blue);
+      background: rgba(111, 147, 214, .1);
+      box-shadow: 0 0 0 1px var(--blue) inset
+    }
+
+    .cm .cmh b {
+      font-family: var(--head);
+      font-size: 19px;
+      font-weight: 600
+    }
+
+    /* ring + chart */
+    .ring {
+      width: 160px;
+      height: 160px
+    }
+
+    .ring b,
+    .ringt b {
+      font-family: var(--head);
+      font-weight: 700
+    }
+
+    .ring circle:first-child,
+    .ringt circle:first-child {
+      stroke: rgba(150, 165, 200, .18)
+    }
+
+    #chart polyline {
+      stroke-width: 3.5
+    }
+
+    #chart polyline:nth-of-type(1) {
+      stroke: #8fb0ea
+    }
+
+    #chart polyline:nth-of-type(2) {
+      stroke: #e0b050
+    }
+
+    .lg span:nth-child(1) {
+      color: #8fb0ea !important
+    }
+
+    .lg span:nth-child(2) {
+      color: #e0b050 !important
+    }
+
+    /* measurement flow */
+    .prog {
+      background: rgba(150, 165, 200, .18);
+      height: 6px
+    }
+
+    .prog i {
+      background: linear-gradient(90deg, #6f93d6, #7fd0ce)
+    }
+
+    .fld label {
+      font-weight: 700
+    }
+
+    .fld input[type=number] {
+      background: rgba(255, 255, 255, .05);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      font-family: var(--head);
+      font-weight: 600
+    }
+
+    .fld input[type=number]:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(111, 147, 214, .2)
+    }
+
+    .fld input[type=range],
+    .chk input[type=range],
+    ul.acts input {
+      accent-color: var(--blue)
+    }
+
+    /* pain question: dark select that matches the number inputs */
+    .fld select {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      background-color: rgba(255, 255, 255, .05);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1.5l6 6 6-6' fill='none' stroke='%2398a3bd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
+      font-family: var(--head);
+      font-size: 18px;
+      font-weight: 600;
+      padding: 12px 44px 12px 14px;
+      cursor: pointer;
+      color-scheme: dark;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .fld select:hover {
+      border-color: rgba(150, 165, 200, .4)
+    }
+
+    .fld select:focus {
+      outline: none;
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(111, 147, 214, .2)
+    }
+
+    .fld select option {
+      background: #0d1324;
+      color: var(--ink)
+    }
+
+    .fld select:invalid,
+    .fld select:has(option[value=""]:checked) {
+      color: var(--mute);
+      font-weight: 500
+    }
+
+    .fld #pclr {
+      width: 100%
+    }
+
+
+    .fld output {
+      font-family: var(--head);
+      font-weight: 700
+    }
+
+    .spin {
+      border-color: rgba(150, 165, 200, .25);
+      border-top-color: var(--blue)
+    }
+
+    /* buttons */
+    .btn {
+      background: rgba(255, 255, 255, .06);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      min-height: 44px;
+      font-weight: 700;
+      transition: background .15s, border-color .15s, transform .1s
+    }
+
+    .btn:hover:not(:disabled) {
+      border-color: var(--blue);
+      background: rgba(111, 147, 214, .14)
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(1px)
+    }
+
+    .btn.p,
+    .cta,
+    .chk button {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: var(--on-acc);
+      box-shadow: 0 8px 22px -6px rgba(111, 147, 214, .5)
+    }
+
+    .btn.p:hover:not(:disabled) {
+      background: #86a6e2;
+      border-color: #86a6e2
+    }
+
+    .btn.act {
+      background: var(--act);
+      border-color: var(--act);
+      color: var(--on-acc)
+    }
+
+    .cta {
+      border-radius: 999px;
+      padding: 14px 30px
+    }
+
+    .btn:focus-visible,
+    .tile:focus-visible,
+    .cm:focus-visible {
+      outline: 3px solid rgba(157, 184, 255, .5);
+      outline-offset: 2px
+    }
+
+    /* results */
+    #fwrap {
+      background: radial-gradient(circle at 50% 28%, #16294f, #070f24);
+      border: 1px solid rgba(111, 147, 214, .3);
+      border-radius: 24px;
+      box-shadow: var(--sh)
+    }
+
+
+
+    .tile {
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 14px;
+      padding: 8px 14px;
+      min-height: 48px;
+      font-weight: 700;
+      box-shadow: var(--sh)
+    }
+
+    .tile[aria-pressed=true] {
+      border-color: var(--blue);
+      background: rgba(111, 147, 214, .16)
+    }
+
+    .bar .n {
+      background: rgba(95, 174, 142, .45)
+    }
+
+    .bar .mk {
+      background: #fff
+    }
+
+    .esc {
+      background: rgba(224, 112, 90, .12);
+      border-radius: 0 10px 10px 0
+    }
+
+    #nasa .nx {
+      background: rgba(111, 147, 214, .12);
+      border-color: rgba(111, 147, 214, .38);
+      border-radius: 14px
+    }
+
+    #nasa .nc {
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .04)
+    }
+
+    #nasa summary,
+    #rp summary,
+    #nasa a,
+    #rp a,
+    .exgo {
+      color: #9db8ff
+    }
+
+    .pd-r {
+      background: rgba(255, 255, 255, .04);
+      border-radius: 12px
+    }
+
+    .rcta {
+      background: linear-gradient(120deg, rgba(111, 147, 214, .16), rgba(24, 34, 60, .82) 55%)
+    }
+
+    .crew {
+      gap: 14px
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      font-size: 13px
+    }
+
+    /* exercise stick-figure preview keeps its own light strokes */
+
+    @media(max-width:820px) {
+      .view {
+        padding: 78px 16px 40px
+      }
+
+      .top {
+        padding: 20px;
+        gap: 20px;
+        justify-content: center;
+        text-align: center
+      }
+
+      .top p {
+        margin-left: auto;
+        margin-right: auto
+      }
+
+      .afig {
+        width: min(100%, calc(min(62vh, 560px) * 1160 / 1140))
+      }
+    }
+
+    @media(max-width:560px) {
+      #nav {
+        padding: 10px 14px
+      }
+
+      #nav .mono {
+        display: none
+      }
+
+      #nav .start {
+        margin-left: 0;
+        padding: 8px 14px
+      }
+
+      #hero h1 {
+        letter-spacing: .16em;
+        text-indent: .16em
+      }
+
+      .grid,
+      .crew {
+        grid-template-columns: 1fr
+      }
+
+      .box,
+      .card {
+        padding: 18px
+      }
+
+      .cm .cmb .btn {
+        flex: 1
+      }
+
+      .nav2 {
+        flex-direction: column-reverse
+      }
+
+      .nav2 .btn {
+        width: 100%
+      }
+
+      .stats {
+        gap: 16px;
+        flex-wrap: wrap
+      }
+
+      .read,
+      .card .row {
+        flex-wrap: wrap
+      }
+
+      .cta {
+        width: 100%
+      }
+
+      #attn {
+        gap: 6px !important
+      }
+
+      .tile {
+        flex: 1 1 calc(33% - 6px);
+        min-width: 0
+      }
+
+      .chap {
+        max-width: none;
+        right: 20px
+      }
+
+      .intro .sub {
+        font-size: 16px
+      }
+    }
+
+    @media(max-width:820px) {
+      .fld input[type=number],
+      .fld select {
+        font-size: 18px
+      }
+    }
+
+    @media(prefers-reduced-motion:reduce) {
+
+      .card,
+      .cm,
+      #nav {
+        transition: none
+      }
+
+      .card:hover,
+      .cm:hover {
+        transform: none
+      }
+    }
+  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:wght@600;700&display=swap"
+    rel="stylesheet">
+</head>
+
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="dim" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values=".4" />
+      <feColorMatrix type="matrix" values=".62 0 0 0 0  0 .70 0 0 0  0 0 .88 0 0  0 0 0 1 0" />
+    </filter>
+  </svg>
+  <div id="nav"><button id="brand" type="button"><b>ASTRA</b></button><span><span class="mono">Mission day <span class="mday">31</span> · <span
+          id="met">31:00:00:00</span></span><button id="startnav" class="start" type="button">Start
+        measuring</button><button id="hbtn" class="start" type="button" hidden>Home</button></span></div>
+  <div id="home">
+    <div id="track">
+      <div id="stage">
+        <canvas id="stars"></canvas>
+        <div id="imgwrap"><img id="bg" alt="An astronaut tumbling in free fall above Earth" src="assets/hero.jpg"></div>
+        <div class="vig"></div>
+        <div id="hero">
+          <div>
+            <h1>AstraPulse</h1>
+            <p>Crew health monitor for deep-space missions</p>
+          </div>
+        </div>
+        <div class="cue" id="cue">Scroll to descend<i></i></div>
+        <div class="chap" id="c1"><small>Mission day <span class="mday">31</span></small>
+          <h2>Weightless, and still being measured.</h2>
+          <p>Keep scrolling. Your daily measurements start below.</p>
+        </div>
+        <div class="chap" id="c2"><small>Health summary</small>
+          <h2 id="c2h">Your status is below.</h2>
+          <p id="c2p"></p>
+        </div>
+        <div id="fade"></div>
+      </div>
+    </div>
+    <main id="content">
+      <header class="intro"><span class="eyebrow">Daily check-in</span>
+        <h2>Ready for today's measurements?</h2>
+        <p class="sub">Nine quick checks, about eight minutes: heart and blood pressure, breathing, glucose,
+          temperature, sleep, mood and fatigue, motion sickness, cabin air, and exercise. Choose a crew member below to
+          begin.</p>
+      </header>
+      <div class="box" id="crewbox"></div>
+      <div class="top">
+        <div class="ring"><svg viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(120,150,230,.2)" stroke-width="9" />
+            <circle id="arc" cx="60" cy="60" r="52" fill="none" stroke="var(--watch)" stroke-width="9"
+              stroke-linecap="round" stroke-dasharray="327" stroke-dashoffset="327" />
+          </svg><b id="score" class="mono">0<small>of 100</small></b></div>
+        <div>
+          <h2>Your last results</h2>
+          <p id="sum"></p>
+        </div>
+      </div>
+      <div class="grid" id="cards"></div>
+      <div class="box" style="margin-top:16px">
+        <h3>Mood and fatigue over the mission</h3>
+        <p>Last 12 weeks, sample data</p><svg id="chart" viewBox="0 0 600 220" role="img"
+          aria-label="Mood falling and fatigue rising over 12 weeks"></svg>
+        <div class="lg"><span style="color:#7fb0ff">● Mood (higher is better)</span><span style="color:#ffb020">●
+            Fatigue (lower is better)</span></div>
+      </div>
+    </main>
+    <footer>Prototype with simulated sample data. Ranges are general adult references, not NASA protocols, and this is
+      not medical advice. Background artwork: replace or credit as required by its license.</footer>
+  </div>
+  <div id="app" hidden>
+    <section class="view" id="v-measure" hidden>
+      <div class="wrap">
+        <div class="prog"><i id="progbar"></i></div>
+        <div id="mbody"></div>
+      </div>
+    </section>
+    <section class="view" id="v-analyze" hidden>
+      <div class="wrap center">
+        <div class="spin"></div>
+        <h2>Running analysis</h2>
+        <p class="sub" id="ap" style="margin:0 auto 18px"></p>
+        <div class="prog" style="max-width:360px;margin:0 auto"><i id="aprog"></i></div>
+      </div>
+    </section>
+    <section class="view" id="v-results" hidden>
+      <div class="wrap">
+        <div class="crumb">Analysis complete</div>
+        <h2>Your body report</h2>
+        <p class="sub" id="rs"></p>
+        <div class="res">
+          <div id="fwrap">
+            <div class="afig">
+              <svg id="azones" viewBox="0 0 1160 1140" role="group" aria-label="Human body with labelled areas. Select a label or a body area to light it up.">
+                <defs>
+                  <filter id="zsoft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="9" /></filter>
+                  <path id="zs-head" d="M338 4 Q392 4 394 62 Q394 110 372 138 L372 190 Q338 202 304 190 L304 138 Q282 110 282 62 Q284 4 338 4 Z" /><path id="zs-skin" d="M258 206 L214 220 L190 252 L170 330 L128 430 L78 515 L16 588 L24 612 L50 604 L92 550 L158 466 L222 374 L240 300 Z M 416 206 L 460 220 L 484 252 L 504 330 L 546 430 L 596 515 L 658 588 L 650 612 L 624 604 L 582 550 L 516 466 L 452 374 L 434 300 Z" /><path id="zs-legs" d="M248 552 L338 584 L346 650 L334 760 L312 830 L302 900 L298 1000 L296 1133 L236 1133 L226 1090 L228 980 L238 880 L246 760 L238 650 Z M 434 552 L 344 584 L 336 650 L 348 760 L 370 830 L 380 900 L 384 1000 L 386 1133 L 446 1133 L 456 1090 L 454 980 L 444 880 L 436 760 L 444 650 Z" /><path id="zs-chest" d="M262 198 Q338 178 414 198 L440 238 L436 336 L246 336 L242 238 Z" /><path id="zs-abdomen" d="M246 338 L436 338 L444 450 L432 548 L338 580 L248 548 L238 450 Z" />
+                  <mask id="mk-head" maskUnits="userSpaceOnUse" x="-60" y="-40" width="800" height="1220"><use href="#zs-head" fill="#fff" filter="url(#zsoft)" /></mask><mask id="mk-skin" maskUnits="userSpaceOnUse" x="-60" y="-40" width="800" height="1220"><use href="#zs-skin" fill="#fff" filter="url(#zsoft)" /></mask><mask id="mk-legs" maskUnits="userSpaceOnUse" x="-60" y="-40" width="800" height="1220"><use href="#zs-legs" fill="#fff" filter="url(#zsoft)" /></mask><mask id="mk-chest" maskUnits="userSpaceOnUse" x="-60" y="-40" width="800" height="1220"><use href="#zs-chest" fill="#fff" filter="url(#zsoft)" /></mask><mask id="mk-abdomen" maskUnits="userSpaceOnUse" x="-60" y="-40" width="800" height="1220"><use href="#zs-abdomen" fill="#fff" filter="url(#zsoft)" /></mask>
+                </defs>
+                <g transform="translate(240 0)">
+                  <image class="bodybase" href="assets/body.png" width="680" height="1140" />
+                  <g class="zlit s-ok" data-zone="head" mask="url(#mk-head)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="skin" mask="url(#mk-skin)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="legs" mask="url(#mk-legs)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="chest" mask="url(#mk-chest)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="abdomen" mask="url(#mk-abdomen)"><image href="assets/body.png" width="680" height="1140" /></g>
+                  <use href="#zs-head" class="zone s-ok" data-zone="head" tabindex="0" role="button" aria-label="Head and brain" /><use href="#zs-skin" class="zone s-ok" data-zone="skin" tabindex="0" role="button" aria-label="Arms, skin and whole body" /><use href="#zs-legs" class="zone s-ok" data-zone="legs" tabindex="0" role="button" aria-label="Bones and legs" /><use href="#zs-chest" class="zone s-ok" data-zone="chest" tabindex="0" role="button" aria-label="Chest and heart" /><use href="#zs-abdomen" class="zone s-ok" data-zone="abdomen" tabindex="0" role="button" aria-label="Abdomen" />
+                  <line class="zl s-ok" data-zone="head" x1="-10" y1="62" x2="338" y2="62" /><circle class="zd s-ok" data-zone="head" cx="338" cy="62" r="6" /><circle class="zp s-ok" cx="338" cy="62" r="6" /><line class="zl s-ok" data-zone="skin" x1="-10" y1="420" x2="165" y2="420" /><circle class="zd s-ok" data-zone="skin" cx="165" cy="420" r="6" /><circle class="zp s-ok" cx="165" cy="420" r="6" /><line class="zl s-ok" data-zone="legs" x1="-10" y1="795" x2="272" y2="795" /><circle class="zd s-ok" data-zone="legs" cx="272" cy="795" r="6" /><circle class="zp s-ok" cx="272" cy="795" r="6" /><line class="zl s-ok" data-zone="chest" x1="690" y1="285" x2="372" y2="285" /><circle class="zd s-ok" data-zone="chest" cx="372" cy="285" r="6" /><circle class="zp s-ok" cx="372" cy="285" r="6" /><line class="zl s-ok" data-zone="abdomen" x1="690" y1="470" x2="392" y2="470" /><circle class="zd s-ok" data-zone="abdomen" cx="392" cy="470" r="6" /><circle class="zp s-ok" cx="392" cy="470" r="6" />
+                </g>
+              </svg>
+              <button type="button" class="albl L s-ok" data-zone="head" style="top:5.4%" aria-label="Head and brain">Mind and cabin air</button><button type="button" class="albl L s-ok" data-zone="skin" style="top:36.8%" aria-label="Arms, skin and whole body">Temperature</button><button type="button" class="albl L s-ok" data-zone="legs" style="top:69.7%" aria-label="Bones and legs">Bones</button><button type="button" class="albl R s-ok" data-zone="chest" style="top:25.0%" aria-label="Chest and heart">Heart and breathing</button><button type="button" class="albl R s-ok" data-zone="abdomen" style="top:41.2%" aria-label="Abdomen">Glucose</button>
+            </div>
+          </div>
+          <div>
+            <div class="box" id="rp"></div>
+            <div id="attn" style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"></div>
+            <div class="box rcta">
+              <div>
+                <h3>Your body assessment report</h3>
+                <p>See your conclusion, what to do now, and how each reading was checked.</p>
+              </div><button class="cta" id="toreport" type="button">Go to report page</button>
+            </div>
+            <div class="nav2"><button class="btn" id="again" type="button">Measure again</button><button class="btn"
+                id="home2" type="button">Back to home</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="view" id="v-report" hidden>
+      <div class="wrap">
+        <div class="crumb" id="rcrumb">Report</div>
+        <h2>Your body assessment report</h2>
+        <p class="sub">Your conclusion and the findings behind it, based on the measurements you just entered.</p>
+        <div class="box" id="nasa"></div>
+        <div class="box rcta" style="margin-top:12px">
+          <div>
+            <h3>Predictions</h3>
+            <p>See what your readings could mean over the coming days and which patterns to watch.</p>
+          </div><button class="cta" id="topred" type="button">Go to predictions</button>
+        </div>
+        <div class="nav2"><button class="btn" id="rback" type="button">Back to body analysis</button><button class="btn"
+            id="rhome" type="button">Back to home</button></div>
+      </div>
+    </section>
+    <section class="view" id="v-pred" hidden>
+      <div class="wrap">
+        <div class="crumb" id="pcrumb">Predictions</div>
+        <h2>Your predictions</h2>
+        <p class="sub">The few things that matter most today, in plain words.</p>
+        <div class="box" id="pred"></div>
+        <div class="nav2"><button class="btn" id="pback" type="button">Back to report</button><button class="btn"
+            id="phome" type="button">Back to home</button></div>
+      </div>
+    </section>
+    <section class="view" id="v-action" hidden>
+      <div class="wrap" id="abody"></div>
+    </section>
+  </div>
+  <script>
+    const D = {
+      head: { short: "Mind", card: "Mood and fatigue", name: "Head and brain", func: "Controls mood, focus and sleep rhythm.", status: "watch", label: "Watch", value: "5.8", unit: "/ 10 fatigue", range: "Target: below 5", trend: [3.4, 3.9, 4.4, 5, 5.4, 5.7, 5.8], why: "Isolation, long workdays and shifting light wear down mood and sleep.", action: "Complete the daily check-in and protect 7 or more hours of sleep tonight.", how: "Rate mood and fatigue from 1 to 10 in the daily check-in." },
+      chest: { short: "Heart", card: "Heart", name: "Chest and heart", func: "Pumps blood and oxygen around the body.", status: "ok", label: "Normal", value: "68", unit: "bpm resting", range: "Normal: 60 to 100 bpm", trend: [66, 67, 66, 69, 68, 70, 68], why: "Without gravity the heart works differently and fluid shifts toward the head.", action: "Keep up cardio. Re-measure blood pressure tomorrow morning.", how: "Sit still for 5 minutes, then use the cuff on your left upper arm." },
+      abdomen: { short: "Glucose", card: "Blood sugar", name: "Abdomen", func: "Digests food and helps balance blood sugar.", status: "watch", label: "Watch", value: "112", unit: "mg/dL", range: "Fasting target: 70 to 100", trend: [98, 101, 104, 106, 108, 110, 112], why: "Stress, exercise changes and diet can shift blood sugar during a mission.", action: "Log a fasting reading tomorrow before breakfast.", how: "Use the fingertip meter before eating and log the number." },
+      skin: { short: "Temp", card: "Temperature and radiation", name: "Arms, skin and whole body", func: "Shows temperature and radiation exposure.", status: "ok", label: "Normal", value: "36.8", unit: "°C", range: "Normal: 36.1 to 37.2", trend: [36.7, 36.8, 36.8, 36.9, 36.7, 36.8, 36.8], why: "Closed cabins affect heat balance, and radiation exposure builds up over a mission.", action: "No action needed. Check your dosimeter at the weekly review.", how: "Use the forehead thermometer, away from vents." },
+      legs: { short: "Bones", card: "Bone health", name: "Bones and legs", func: "Support the body and store calcium.", status: "act", label: "Action needed", value: "2", unit: "of 5 sessions", range: "Weekly target: 5 sessions", trend: [5, 4, 4, 3, 3, 2, 2], why: "Without gravity loading, bones lose density and muscles weaken. Exercise is the main protection.", action: "Complete a resistance session today and book the next three.", how: "Log each session in the exercise tracker.", esc: "Two more missed sessions this week should be flagged to the flight surgeon." },
+      sleep: { short: "Sleep", card: "Sleep", name: "Sleep", func: "Restores the body and mind.", status: "watch", label: "Watch", value: "6.1", unit: "h per night", range: "Target: 7 to 8 h", trend: [6.9, 6.7, 6.5, 6.4, 6.2, 6.1, 6.1], why: "Light cycles and noise in a spacecraft shorten sleep.", action: "Keep a fixed sleep window and dim cabin lights an hour before bed.", how: "Wear the sleep band and log how rested you feel." }
+    };
+    const CARDS = ["legs", "head", "chest", "sleep", "abdomen", "skin"], CSS = { ok: "#5fae8e", watch: "#d9a441", act: "#e0705a" }, ICON = { ok: "●", watch: "▲", act: "■" }, PT = { ok: 100, watch: 70, act: 35 };
+    const $ = s => document.querySelector(s), clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x)), sm = x => x * x * (3 - 2 * x), seg = (p, a, b) => sm(clamp((p - a) / (b - a)));
+    function spark(t, c, w = 130, h = 46) { const mn = Math.min(...t), mx = Math.max(...t), r = mx - mn || 1, p = t.map((v, i) => [i * (w - 8) / (t.length - 1) + 4, h - 6 - (v - mn) / r * (h - 12)]); return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${c}" stroke-width="2.5" stroke-linejoin="round" points="${p.map(x => x.join(",")).join(" ")}"/><circle cx="${p.at(-1)[0]}" cy="${p.at(-1)[1]}" r="4" fill="${c}"/></svg>` }
+    /* content */
+    const ks = Object.keys(D), score = Math.round(ks.reduce((a, k) => a + PT[D[k].status], 0) / ks.length), cnt = s => ks.filter(k => D[k].status === s).length;
+    $("#cards").innerHTML = CARDS.map(k => { const d = D[k]; return `<div class="card"><div class="h"><h3>${d.card}</h3><span class="badge ${d.status}">${ICON[d.status]} ${d.label}</span></div><div class="row"><div><div class="v mono">${d.value}<span class="u">${d.unit}</span></div><div class="rg">${d.range}</div></div>${spark(d.trend, CSS[d.status])}</div><p>${d.action}</p></div>` }).join("");
+    $("#sum").textContent = `${ks.length} areas tracked: ${cnt("ok")} normal, ${cnt("watch")} on watch, ${cnt("act")} needing action. Bone health is the priority today.`;
+    $("#c2h").textContent = `${cnt("act")} needs action, ${cnt("watch")} on watch.`; $("#c2p").textContent = "Scroll on for the full summary of every area.";
+    $("#score").innerHTML = `${score}<small>of 100</small>`; const arc = $("#arc"); arc.style.stroke = score >= 80 ? CSS.ok : score >= 55 ? CSS.watch : CSS.act; arc.style.strokeDashoffset = 327 * (1 - score / 100);
+    (function () {
+      const m = [7.2, 7.1, 7, 6.9, 6.7, 6.5, 6.3, 6.1, 5.9, 5.7, 5.5, 5.4], f = [3.4, 3.6, 3.9, 4.1, 4.4, 4.7, 5, 5.2, 5.4, 5.6, 5.7, 5.8], X = i => 40 + i * (540 / 11), Y = v => 200 - (v - 2) / (8 - 2) * 170, L = a => a.map((v, i) => X(i) + "," + Y(v)).join(" ");
+      let g = "";[2, 4, 6, 8].forEach(v => g += `<line x1="40" x2="580" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(120,150,230,.15)"/><text x="8" y="${Y(v) + 4}" fill="#8fa0c9" font-size="11">${v}</text>`);
+      [0, 3, 6, 9, 11].forEach(i => g += `<text x="${X(i)}" y="216" fill="#8fa0c9" font-size="11" text-anchor="middle">W${i + 1}</text>`);
+      $("#chart").innerHTML = g + `<polyline fill="none" stroke="#7fb0ff" stroke-width="3" stroke-linejoin="round" points="${L(m)}"/><polyline fill="none" stroke="#ffb020" stroke-width="3" stroke-linejoin="round" points="${L(f)}"/>`
+    })();
+    /* stars */
+    const cv = $("#stars"), cx = cv.getContext("2d"); let vw, vh, iw, ih, tx, panA, S = [];
+    function layout() {
+      vw = innerWidth; vh = innerHeight; const dpr = Math.min(devicePixelRatio || 1, 2); cv.width = vw * dpr; cv.height = vh * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const sc = Math.max(vw / 1080, vh * 1.5 / 1350); iw = 1080 * sc; ih = 1350 * sc; tx = clamp(vw / 2 - .52 * iw, vw - iw, 0); panA = clamp((.44 * ih - vh / 2) / (ih - vh), .2, .9);
+      const w = $("#imgwrap"); w.style.width = iw + "px"; w.style.height = ih + "px"; S = Array.from({ length: Math.round(vw * vh / 4500) }, () => ({ x: Math.random() * vw, y: Math.random() * vh, r: Math.random() * 1.1 + .25, t: Math.random() * 6, s: Math.random() * .02 + .004 }))
+    }
+    function frame() {
+      if ($("#home").hidden) { requestAnimationFrame(frame); return } const tr = $("#track"), p = clamp(scrollY / (tr.offsetHeight - vh));
+      const io = seg(p, .1, .3), a = clamp((p - .12) / .46), b = clamp((p - .58) / .34), pan = panA * sm(a) + (1 - panA) * sm(b), s = 1 + .18 * sm(b);
+      const w = $("#imgwrap"); w.style.opacity = io; w.style.transform = `translate3d(${tx}px,${-pan * (ih - vh)}px,0) scale(${s})`;
+      cx.clearRect(0, 0, vw, vh); cx.fillStyle = "#fff"; const off = p * vh * .5; for (const t of S) { t.t += t.s; cx.globalAlpha = (.3 + .7 * Math.abs(Math.sin(t.t))) * (1 - io * .85); cx.beginPath(); cx.arc(t.x, ((t.y - off) % vh + vh) % vh, t.r, 0, 6.283); cx.fill() }
+      $("#hero").style.opacity = 1 - seg(p, .03, .12); $("#cue").style.opacity = 1 - seg(p, .03, .1);
+      $("#c1").style.opacity = seg(p, .3, .38) * (1 - seg(p, .56, .62)); $("#c2").style.opacity = seg(p, .68, .76) * (1 - seg(p, .9, .96));
+      $("#fade").style.opacity = seg(p, .9, 1); requestAnimationFrame(frame)
+    }
+    const MD0 = parseInt(new URLSearchParams(location.search).get("day") || "31", 10); document.querySelectorAll(".mday").forEach(e => e.textContent = MD0); let S0 = MD0 * 86400; const p2 = n => String(n).padStart(2, "0"); setInterval(() => { S0++; $("#met").textContent = `${Math.floor(S0 / 86400)}:${p2(Math.floor(S0 % 86400 / 3600))}:${p2(Math.floor(S0 % 3600 / 60))}:${p2(S0 % 60)}` }, 1000);
+    /* ---------- measurement and results flow ---------- */
+    const R = { hr: { name: "Resting heart rate", unit: "bpm", n: [60, 100], w: [50, 110] }, sys: { name: "Systolic pressure", unit: "mmHg", n: [90, 129], w: [80, 139] }, dia: { name: "Diastolic pressure", unit: "mmHg", n: [60, 84], w: [50, 89] }, glu: { name: "Fasting glucose", unit: "mg/dL", n: [70, 100], w: [60, 125] }, temp: { name: "Body temperature", unit: "°C", n: [36.1, 37.2], w: [35.5, 37.9] }, sleep: { name: "Sleep last night", unit: "h", n: [7, 12], w: [5.5, 12] }, mood: { name: "Mood", unit: "/ 10", n: [6, 10], w: [4, 10] }, fat: { name: "Fatigue", unit: "/ 10", n: [0, 4], w: [0, 7] }, ex: { name: "Resistance sessions this week", unit: "of 5", n: [4, 5], w: [3, 5] } };
+    const STEPS = [
+      { title: "Heart rate and blood pressure", why: "Spaceflight shifts fluid toward the head and changes how the heart works.", how: ["Sit still and relax for 5 minutes.", "Wrap the cuff on your left upper arm, level with your heart.", "Press start and keep your arm still until the cuff finishes.", "Read the heart rate, the top number (systolic) and the bottom number (diastolic)."], f: [{ k: "hr", label: "Resting heart rate", unit: "bpm", min: 30, max: 220, v: 68 }, { k: "sys", label: "Systolic (top number)", unit: "mmHg", min: 60, max: 220, v: 118 }, { k: "dia", label: "Diastolic (bottom number)", unit: "mmHg", min: 30, max: 140, v: 76 }] },
+      { title: "Blood glucose", why: "Stress, diet and activity changes can shift blood sugar in space.", how: ["Wash and dry your hands.", "Insert a test strip into the meter.", "Prick the side of a fingertip with the lancet.", "Touch the blood drop to the strip and wait for the reading.", "Measure before eating for a fasting reading."], f: [{ k: "glu", label: "Fasting blood glucose", unit: "mg/dL", min: 30, max: 500, v: 112 }] },
+      { title: "Body temperature", why: "Closed cabins change how the body holds heat.", how: ["Wait 15 minutes after exercise or a hot drink.", "Hold the forehead thermometer about 3 cm from your forehead, away from vents.", "Press the button and read the display."], f: [{ k: "temp", label: "Body temperature", unit: "°C", min: 33, max: 42, v: 36.8, step: .1 }] },
+      { title: "Sleep", why: "Light cycles and noise in a spacecraft shorten sleep.", how: ["Open the sleep band summary or your sleep log.", "Read the total hours you slept last night."], f: [{ k: "sleep", label: "Hours slept last night", unit: "h", min: 0, max: 14, v: 6.1, step: .1 }] },
+      { title: "Mood and fatigue", why: "Isolation and long workdays wear down mood and energy.", how: ["Take a moment to notice how you feel right now.", "Mood: 1 is very low, 10 is excellent.", "Fatigue: 1 is fully rested, 10 is exhausted."], f: [{ k: "mood", label: "Mood", unit: "/ 10", min: 1, max: 10, v: 5, r: 1 }, { k: "fat", label: "Fatigue", unit: "/ 10", min: 1, max: 10, v: 6, r: 1 }] },
+      { title: "Exercise this week", why: "Resistance exercise is the main protection against bone and muscle loss.", how: ["Open the exercise tracker.", "Count the resistance sessions you completed in the past 7 days."], f: [{ k: "ex", label: "Resistance sessions completed", unit: "of 5", min: 0, max: 5, v: 2, r: 1 }] }];
+    const ZN = { head: { name: "Head and brain", ms: ["mood", "fat", "sleep"] }, chest: { name: "Chest and heart", ms: ["hr", "sys", "dia"] }, abdomen: { name: "Abdomen", ms: ["glu"] }, skin: { name: "Arms, skin and whole body", ms: ["temp"] }, legs: { name: "Bones and legs", ms: ["ex"] } };
+    const PLAN = {
+      head: { t: "Rest and recovery plan", p: "Mood, fatigue or sleep is outside the normal range.", s: ["Set a fixed 8-hour sleep window tonight and dim cabin lights an hour before.", "Take a 10-minute breathing or stretching break.", "Call a family member or crewmate.", "Repeat the mood and fatigue check tomorrow morning."] },
+      chest: { t: "Heart and blood pressure plan", p: "Heart rate or blood pressure is outside the normal range.", s: ["Rest seated for 10 minutes, then measure again.", "Avoid caffeine and hard exercise for 2 hours.", "Drink a full glass of water.", "If it stays outside the range, message the flight surgeon."] },
+      abdomen: { t: "Blood sugar plan", p: "Fasting glucose is outside the normal range.", s: ["Drink a glass of water and skip sugary snacks.", "Take a 10-minute walk or do light exercise.", "Measure again in 2 hours.", "If it stays outside the range, message the flight surgeon."] },
+      skin: { t: "Temperature plan", p: "Body temperature is outside the normal range.", s: ["Check cabin temperature and vents, then adjust your layers.", "Measure again in 30 minutes.", "Check your dosimeter badge.", "If a fever persists, message the flight surgeon."] }
+    };
+    const MOVES = [{ n: "Arm raises", t: "Raise both arms overhead, then lower them slowly.", c: "m-arms" }, { n: "Side leg raises", t: "Lift one leg out to the side, then the other.", c: "m-legs" }, { n: "Squats", t: "Bend your knees and lower your hips, then stand tall.", c: "m-squat" }, { n: "Calf raises", t: "Rise onto your toes, then lower slowly.", c: "m-calf" }];
+    const LAB = { ok: "Normal", watch: "Watch", act: "Action needed" }, RANK = { ok: 0, watch: 1, act: 2 }, NM = ["ok", "watch", "act"];
+    const V = {}, done = {}; let st = 0, homeY = 0, curZ = "head", G = null, gi = null;
+    /* ---------- ASTRA backend link + conclusion: NASA-JSON rules where they exist, built-in ranges elsewhere, all in plain words ---------- */
+    const QS = new URLSearchParams(location.search);
+    const API = QS.get("api") || (location.protocol.startsWith("http") && location.port === "8000" ? location.origin : "http://127.0.0.1:8000");
+    const MDAY = parseInt(QS.get("day") || "31", 10), MPHASE = QS.get("phase") || "postflight";   /* day 31 = first new day after the 30-day CSVs; override with ?day=&phase= */
+    const BK = {
+      hr: ["crew", "resting_hr_bpm"],
+      sys: ["crew", "systolic_mmHg"],
+      dia: ["crew", "diastolic_mmHg"],
+      sv: ["crew", "stroke_volume_ml"],
+      spo2: ["crew", "spo2_pct"],
+      sleep: ["crew", "sleep_hours"],
+      seff: ["crew", "sleep_efficiency_pct"],
+      circ: ["crew", "circadian_misaligned"],
+      fat: ["crew", "fatigue_0_100"],
+      pvt: ["crew", "pvt_lapses"],
+      poms: ["crew", "poms_score"],
+      vo2: ["crew", "vo2_pct_baseline"],
+      aero: ["crew", "aerobic_min"],
+      ex: ["crew", "resistance_min"],
+      headache: ["crew", "headache_flag"],
+      dizzy: ["crew", "dizziness_standing_flag"],
+      sms: ["motion_sickness", "severity_0_3"],
+      temp: ["body_temperature", "core_temp_rest_c"],
+      tpeak: ["body_temperature", "core_temp_exercise_peak_c"],
+      co2: ["body_temperature", "cabin_co2_mmHg"]
+    };
+    const A = {}, ZO = {}, AX = { ok: false, err: "", reports: [], src: {}, labels: {} };
+    const SC = { fat: .1 }, fmt = n => Math.round(n * 10) / 10;
+    const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    /* 20-indicator ranges & check-in questionnaire aligned with rules.json */
+    Object.assign(R, {
+      hr: { name: "Resting heart rate", unit: "bpm", n: [50, 90], w: [40, 110] },
+      sys: { name: "Systolic BP", unit: "mmHg", n: [95, 130], w: [85, 145] },
+      dia: { name: "Diastolic BP", unit: "mmHg", n: [60, 85], w: [50, 95] },
+      sv: { name: "Stroke volume", unit: "mL", n: [60, 100], w: [45, 115] },
+      spo2: { name: "Blood oxygen (SpO2)", unit: "%", n: [95, 100], w: [90, 100] },
+      sleep: { name: "Sleep duration", unit: "h", n: [7, 9], w: [6, 10] },
+      seff: { name: "Sleep efficiency", unit: "%", n: [85, 100], w: [75, 100] },
+      circ: { name: "Circadian misalignment", unit: "0=no, 1=yes", n: [0, 0], w: [0, 1] },
+      fat: { name: "Fatigue rating", unit: "1 to 10", n: [1, 5], w: [1, 7] },
+      pvt: { name: "PVT lapses", unit: "count", n: [0, 3], w: [0, 7] },
+      poms: { name: "POMS mood score", unit: "score", n: [-20, 25], w: [-20, 50] },
+      vo2: { name: "VO2 (% of preflight)", unit: "%", n: [85, 110], w: [75, 110] },
+      aero: { name: "Aerobic exercise", unit: "min", n: [20, 90], w: [10, 120] },
+      ex: { name: "Resistance exercise", unit: "min", n: [30, 90], w: [15, 120] },
+      headache: { name: "Headache today", unit: "0=no, 1=yes", n: [0, 0], w: [0, 1] },
+      dizzy: { name: "Dizziness on standing", unit: "0=no, 1=yes", n: [0, 0], w: [0, 1] },
+      sms: { name: "Motion sickness", unit: "0 to 3", n: [0, 0], w: [0, 2] },
+      temp: { name: "Resting core temp", unit: "°C", n: [36.1, 37.8], w: [35.5, 38.2] },
+      tpeak: { name: "Exercise peak temp", unit: "°C", n: [37.0, 39.2], w: [36.5, 40.0] },
+      co2: { name: "Cabin CO2", unit: "mmHg", n: [0, 2.3], w: [0, 3.0] },
+      glu: { name: "Fasting blood glucose", unit: "mg/dL", n: [70, 100], w: [60, 125] }
+    });
+    STEPS.length = 0;
+    STEPS.push(
+      {
+        title: "Heart, BP & Orthostatic Check",
+        why: "Microgravity shifts fluid toward the head and alters stroke volume and standing blood pressure.",
+        how: [
+          "Sit or lie quietly for 5 minutes before measuring resting heart rate and blood pressure.",
+          "Enter stroke volume from your cardiac/ultrasound check.",
+          "Set Dizziness on standing to 1 if you felt light-headed when standing up."
+        ],
+        f: [
+          { k: "hr", label: "Resting heart rate", unit: "bpm", min: 25, max: 220, v: 64 },
+          { k: "sys", label: "Systolic blood pressure", unit: "mmHg", min: 50, max: 260, v: 112 },
+          { k: "dia", label: "Diastolic blood pressure", unit: "mmHg", min: 30, max: 160, v: 70 },
+          { k: "sv", label: "Stroke volume", unit: "mL", min: 10, max: 200, v: 78 },
+          { k: "dizzy", label: "Dizziness on standing (0 = No, 1 = Yes)", unit: "0 or 1", min: 0, max: 1, v: 0, r: 1 }
+        ]
+      },
+      {
+        title: "Oxygen, Cabin Air (CO2) & Headache",
+        why: "Elevated cabin CO2 and closed-loop life support can trigger headaches, poor sleep, or low oxygen saturation.",
+        how: [
+          "Clip the pulse oximeter onto a warm fingertip and wait for a steady SpO2 reading.",
+          "Read the cabin partial pressure CO2 (ppCO2) monitor in mmHg.",
+          "Set Headache today to 1 if you have a headache."
+        ],
+        f: [
+          { k: "spo2", label: "Blood oxygen saturation (SpO2)", unit: "%", min: 50, max: 100, v: 97, step: .1 },
+          { k: "co2", label: "Cabin CO2", unit: "mmHg", min: 0, max: 30, v: 2.1, step: .1 },
+          { k: "headache", label: "Headache today (0 = No, 1 = Yes)", unit: "0 or 1", min: 0, max: 1, v: 0, r: 1 }
+        ]
+      },
+      {
+        title: "Sleep & Circadian Timing",
+        why: "Short sleep and shifted sleep windows degrade vigilance and increase stress on long missions.",
+        how: [
+          "Enter total actual sleep obtained last night (not total time scheduled).",
+          "Enter sleep efficiency percentage from your actigraphy watch.",
+          "Set Circadian misalignment to 1 if your bedtime shifted by 60+ minutes from schedule."
+        ],
+        f: [
+          { k: "sleep", label: "Sleep duration", unit: "hours", min: 0, max: 16, v: 6.8, step: .1 },
+          { k: "seff", label: "Sleep efficiency", unit: "%", min: 0, max: 100, v: 88, step: .5 },
+          { k: "circ", label: "Circadian misalignment (0 = No, 1 = Yes)", unit: "0 or 1", min: 0, max: 1, v: 0, r: 1 }
+        ]
+      },
+      {
+        title: "Fatigue, Vigilance & Mood",
+        why: "Combining subjective fatigue with objective reaction-time lapses detects early neurobehavioral decline.",
+        how: [
+          "Rate your current physical and mental fatigue from 1 (fresh) to 10 (exhausted).",
+          "Enter the number of lapses (RT >= 355 ms) from today's 3-minute PVT-B Reaction Self Test.",
+          "Enter your POMS Total Mood Disturbance score (higher = more mood disturbance)."
+        ],
+        f: [
+          { k: "fat", label: "Fatigue rating", unit: "1 to 10", min: 0, max: 10, v: 4, step: .5, r: 1 },
+          { k: "pvt", label: "PVT lapses", unit: "count", min: 0, max: 200, v: 2 },
+          { k: "poms", label: "POMS mood score", unit: "score", min: -100, max: 300, v: 10 }
+        ]
+      },
+      {
+        title: "Exercise & Aerobic Fitness",
+        why: "Daily aerobic and resistive countermeasures prevent cardiovascular deconditioning and bone/muscle loss.",
+        how: [
+          "Enter today's completed aerobic exercise minutes (CEVIS / T2 treadmill).",
+          "Enter today's completed resistive exercise minutes (ARED).",
+          "Enter your latest VO2peak as a percentage of your preflight baseline."
+        ],
+        f: [
+          { k: "aero", label: "Aerobic exercise minutes", unit: "min", min: 0, max: 600, v: 30 },
+          { k: "ex", label: "Resistance exercise minutes", unit: "min", min: 0, max: 600, v: 45 },
+          { k: "vo2", label: "VO2 (% of preflight baseline)", unit: "%", min: 20, max: 150, v: 88, step: .5 }
+        ]
+      },
+      {
+        title: "Body Temperature, Motion Sickness & Glucose",
+        why: "Core temperature rises in microgravity, especially during exercise, and gravity transitions can trigger motion sickness.",
+        how: [
+          "Measure resting core temperature away from cabin cooling vents.",
+          "Enter peak core temperature reached during today's exercise session.",
+          "Rate space motion sickness severity from 0 (none) to 3 (severe), and enter fasting glucose."
+        ],
+        f: [
+          { k: "temp", label: "Resting core temperature", unit: "°C", min: 34, max: 42, v: 36.8, step: .05 },
+          { k: "tpeak", label: "Exercise peak core temperature", unit: "°C", min: 35, max: 43, v: 38.1, step: .05 },
+          { k: "sms", label: "Motion sickness severity (0–3)", unit: "0 to 3", min: 0, max: 3, v: 0, r: 1 },
+          { k: "glu", label: "Fasting blood glucose", unit: "mg/dL", min: 30, max: 500, v: 92 }
+        ]
+      }
+    );
+    /* pain question: where is the pain? exactly 5 choices, one per body area; left unanswered = no pain */
+    const PAIN = [["head", "Head"], ["chest", "Chest"], ["abdomen", "Abdomen"], ["skin", "Arms, skin or whole body"], ["legs", "Legs or bones"]];
+    const PAINNOTE = "This app cannot judge pain. Tell the flight surgeon or mission medical team about it, especially if it is new, getting worse, or comes with other symptoms.";
+    const PAINPLAN = { t: "Pain follow-up", p: "You reported pain in this area.", s: ["Note when the pain started and what makes it better or worse.", "Message the flight surgeon or mission medical team about it.", "Tell them at once if it gets worse or you feel unwell."] };
+    STEPS.push({ title: "Pain", why: "Pain in one part of the body can be an early sign that something needs a check.", how: ["Think about whether anything hurts right now.", "If it does, choose the area where the pain is.", "If nothing hurts, leave the choice empty."], f: [{ k: "pain", label: "Where is the pain?", unit: "choose one", opts: PAIN, v: "" }] });
+    ZN.chest.ms = ["hr", "sys", "dia", "sv", "spo2", "dizzy"];
+    ZN.head.ms = ["sleep", "seff", "circ", "fat", "pvt", "poms", "headache", "sms", "co2"];
+    ZN.legs.ms = ["aero", "ex", "vo2"];
+    ZN.skin.ms = ["temp", "tpeak"];
+    ZN.abdomen.ms = ["glu"];
+    async function post(group, values) {
+      const readings = {};
+      for (const k in values) {
+        const val = values[k];
+        if (typeof val === "boolean") readings[k] = val;
+        else if (val != null && !isNaN(val)) readings[k] = val;
+      }
+      const r = await fetch(API + "/check", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ subject_id: CUR.id, group: group, day: MDAY, phase: MPHASE, readings: readings, include_uncited: true, posture: group === "crew" ? (/^(post|land|re)/i.test(MPHASE) ? "standing" : "supine") : undefined }) });
+      if (!r.ok) { let d = ""; try { const j = await r.json(); d = typeof j.detail === "string" ? j.detail : JSON.stringify(j.detail) } catch (e) { } throw new Error("HTTP " + r.status + (d ? ": " + d : "")) } return r.json()
+    }
+    /* turn the backend's /check answer into the per-reading summary the page draws */
+    const cdf = z => { const t = 1 / (1 + .2316419 * Math.abs(z)), d = .3989423 * Math.exp(-z * z / 2), p = d * t * (.3193815 + t * (-.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return z > 0 ? 1 - p : p };
+    function toReasons(ind) {
+      const R2 = [], cs = ind.checks || [];
+      for (const c of cs) {
+        const t = c.check; let type = t.startsWith("cited:") ? "nasa_rule" : t.startsWith("window:") ? "window_rule" : t.startsWith("generic:") ? "uncited_default" : t === "personal_baseline" ? null : t === "cohort_reference" ? null : t === "label" ? "your_label" : "nasa_rule"; if (!type) continue;
+        R2.push({ type: type, status: c.status, message: c.message, action: c.action, rule: t.replace(/^(cited|window|generic):/, ""), sources: c.sources || [] })
+      }
+      const cr = ind.cohort_reference; if (cr && cr.applies && cr.z != null) R2.push({ type: "nasa_reference", status: cr.info_only ? "" : (cr.status || "ok"), message: cr.message, z: cr.z, percentile: Math.round(cdf(cr.z) * 100), sources: cr.sources || [] });
+      if (cr && cr.landing_day_context) R2.push({ type: "nasa_context", status: "ok", message: cr.landing_day_context });
+      const pb = ind.personal_baseline; if (pb && pb.scored) R2.push({ type: "personal_baseline", status: pb.status, message: pb.message, baseline: { days: pb.n, mean: pb.mean, sd: pb.sd, z: pb.z } });
+      else if (pb) R2.push({ type: "note", status: "no_reference", message: pb.reason || "Not enough history for a personal comparison." });
+      for (const u of ind.not_scored || []) if (u.check !== "personal_baseline") R2.push({ type: "note", status: "no_reference", message: u.message });
+      const ph = ind.phase_shift_info; if (ph && ph.message) R2.push({ type: "nasa_delta", status: "ok", message: ph.message, sources: ph.sources || [] });
+      for (const n of ind.notes || []) R2.push({ type: "note", status: "ok", message: n });
+      return R2
+    }
+    function toFinding(ind) {
+      const cs = ind.checks || []; let top = null; for (const c of cs) { if (RANK[c.status] === undefined) continue; if (!top || RANK[c.status] > RANK[top.status]) top = c }
+      const kind = c => !c ? "note" : c.check.startsWith("cited:") || c.check.startsWith("window:") ? "cited" : c.check.startsWith("generic:") ? "uncited_default" : c.check === "personal_baseline" ? "personal_baseline" : c.check;
+      const pb = ind.personal_baseline;
+      return {
+        status: top ? top.status : "ok", type: kind(top), rule: top ? top.check.replace(/^(cited|window|generic):/, "") : "", message: top ? top.message : "", action: (top && top.action) || "",
+        base: pb && pb.scored ? { mean: pb.mean, sd: pb.sd } : null, sources: [...new Set(cs.flatMap(c => c.sources || []))], pending: (ind.not_scored || []).map(u => u.message)
+      }
+    }
+    function digest(f) { return { status: RANK[f.status] !== undefined ? f.status : "ok", msg: f.message, action: f.action, type: f.type, rule: f.rule, base: f.base, src: f.sources, pending: f.pending } }
+    async function askBackend() {
+      for (const k in A) delete A[k]; for (const k in ZO) delete ZO[k]; AX.ok = false; AX.err = ""; AX.reports = []; AX.src = {}; AX.labels = {};
+      try {
+        const c = await post("crew", {
+          resting_hr_bpm: V.hr,
+          systolic_mmHg: V.sys,
+          diastolic_mmHg: V.dia,
+          stroke_volume_ml: V.sv,
+          spo2_pct: V.spo2,
+          sleep_hours: V.sleep,
+          sleep_efficiency_pct: V.seff,
+          circadian_misaligned: Boolean(V.circ),
+          fatigue_0_100: V.fat * 10,
+          pvt_lapses: V.pvt,
+          poms_score: V.poms,
+          vo2_pct_baseline: V.vo2,
+          aerobic_min: V.aero,
+          resistance_min: V.ex,
+          headache_flag: Boolean(V.headache),
+          dizziness_standing_flag: Boolean(V.dizzy)
+        });
+        const m = await post("motion_sickness", { severity_0_3: V.sms });
+        const t = await post("body_temperature", {
+          core_temp_rest_c: V.temp,
+          core_temp_exercise_peak_c: V.tpeak,
+          cabin_co2_mmHg: V.co2
+        });
+        AX.reports = [c, m, t].map(rep => ({
+          group: rep.group, notices: rep.notes || [], unrecognized_fields: [], compound_findings: rep.compound_findings || rep.predictions || [],
+          findings: Object.entries(rep.indicators || {}).map(([iid, ind]) => ({ indicator: iid, label: ind.label, reasons: toReasons(ind) }))
+        })); const by = {};
+        for (const rep of [c, m, t]) { Object.assign(AX.src, rep.sources || {}); for (const iid in rep.indicators || {}) { const ind = rep.indicators[iid]; by[rep.group + "|" + iid] = toFinding(ind); AX.labels[iid] = ind.label } }
+        for (const k in BK) { const f = by[BK[k][0] + "|" + BK[k][1]]; if (f) A[k] = digest(f) }
+        const cf = compList();
+        if (cf.length) ZO.head = cf.reduce((a, x) => RANK[x.status] > RANK[a] ? x.status : a, "ok");
+        AX.ok = true; try { sessionStorage.astraA = JSON.stringify({ A: A, ZO: ZO, AX: AX }) } catch (e) { }
+      }
+      catch (e) { AX.err = String(e && e.message || e) }
+    }
+    const compList = () => { const seen = new Set(); return AX.reports.flatMap(r => r.compound_findings || []).filter(x => !seen.has(x.id) && seen.add(x.id)) };
+    const COMP = { h: "Combined multi-indicator pattern detected", b: "Two or more physiological or environmental readings together match a spaceflight risk pattern.", d: "Review the combined alert details below, prioritize rest or countermeasures, and notify the flight surgeon if persistent." };
+    /* plain wording for readings the NASA file judges */
+    function plain(k) {
+      const a = A[k], r = R[k], v = V[k], nm = r.name, u = r.unit, s = a.status;
+      const mean = a.base ? fmt(a.base.mean * (SC[k] || 1)) : null, own = `Over your last week it averaged ${mean} ${u}. Today it is ${v}.`;
+      const T = {
+        sleep_7day_mean_le_6: { h: "Several short nights in a row", b: "Your average over the past week is 6 hours or less. On the station, that much lost sleep went with slower reactions and more stress.", d: "Plan an early night and a recovery sleep. Tell the flight surgeon if your work or mood is slipping." },
+        sleep_le_6: { h: "You slept too little", b: "At 6 hours or less, station crew reacted more slowly and felt more stressed. NASA plans 8.5 hours of sleep.", d: "Keep tonight's bedtime fixed, dim the lights an hour before, skip late caffeine and hard exercise, and do not lean on sleeping pills." },
+        sleep_6_to_7: { h: "A little short, but common", b: "Most crew sleep under 7 hours on the station. NASA plans 8.5, so aim for a bit more tonight.", d: "" },
+        sleep_ge_7: { h: "Good sleep", b: "7 hours or more. Only about 1 night in 4 reaches that on the station.", d: "" },
+        co2_ge_3: { h: "Cabin air has too much CO2", b: "At or above NASA's limit of 3 mmHg. High CO2 can cause headaches, poor sleep and blurry vision.", d: "Check ventilation and CO2 removal and take it easy physically. Tell the flight surgeon if you have a headache or other symptoms." },
+        co2_2_3_to_3: { h: "CO2 is getting high", b: "Below NASA's 3 mmHg limit, but crew on the station began reporting symptoms from about 2.3.", d: "Watch for headache or poor sleep, and check airflow where you sleep and work." },
+        co2_lt_2_3: { h: "Cabin air is fine", b: "CO2 is below the level where crew began noticing symptoms.", d: "" },
+        co2_7day_mean: { h: "CO2 has stayed high all week", b: "Your 7-day average is 2.5 mmHg or more. NASA wants it under 2.5 to keep headaches rare.", d: "Look for a lasting ventilation problem, not just one bad day." },
+        sms_0: { h: "No motion sickness", b: "No signs or symptoms.", d: "" },
+        sms_1_late: { h: "Mild motion sickness is lasting", b: "Space motion sickness usually fades within 2 to 3 days. Mild symptoms this long are worth watching.", d: "Move your head slowly, drink water and rest. If it gets worse, message the flight surgeon." },
+        sms_2_late: { h: "Moderate motion sickness that is not fading", b: "Moderate symptoms beyond about 3 days are outside the normal NASA time course.", d: "Move slowly, drink water, rest, and message the flight surgeon today." },
+        sms_3: { h: "Severe motion sickness", b: "It can make work hard and can lead to dehydration.", d: "Message the flight surgeon now. Move slowly and sip water." }
+      };
+      if (T[a.rule]) return T[a.rule];
+      if (k === "sms" && s === "ok") return { h: v > 0 ? "Mild, within the usual range" : "No motion sickness", b: "Within what NASA expects for this stage.", d: "" };
+      if (k === "temp" && a.type === "uncited_default") return { h: "Fever-level temperature", b: "38 °C or higher is what doctors on Earth call a fever. NASA has not set its own limit for this, so the warning comes from general medical practice.", d: "Rest, make sure you are not just warm from exercise or sitting near a vent, and measure again in 30 minutes. If it stays at 38 °C or more, or you feel unwell, message the flight surgeon." };
+      if (k === "temp" && s === "ok") return { h: "No fever-level reading", b: "Your temperature is under 38 °C. In orbit, resting body temperature tends to creep up over weeks, so we also compare it with your own past days.", d: "" };
+      if (k === "spo2" && a.type === "uncited_default") return { h: s === "act" ? "Blood oxygen is very low" : "Blood oxygen is low", b: s === "act" ? "Below 90% is a serious drop. NASA has not set its own limit, so this comes from general medical practice." : "Below 95% is generally considered low. NASA has not set its own limit, so this comes from general medical practice.", d: s === "act" ? "Message the flight surgeon now." : "Sit up, take slow deep breaths and measure again in a few minutes. If it stays low, message the flight surgeon." };
+      if (k === "spo2" && s === "ok") return { h: "Oxygen level looks fine", b: "No low reading. Crew in flight typically measure around 97%.", d: "" };
+      if (a.type === "personal_baseline") {
+        if (s === "ok") return { h: "Normal for you", b: "In line with your recent days. " + own, d: "" };
+        if (s === "watch") return { h: nm + " is unusual for you", b: own, d: "Rest for 10 minutes, then measure again. If it is still off tomorrow, mention it to the flight surgeon." };
+        return { h: nm + " is well outside your usual", b: own, d: "Rest for 10 minutes and measure again. If it stays like this, message the flight surgeon today." }
+      }
+      if (a.type === "note") return { h: "No warning so far", b: `NASA has no fixed in-flight target for ${nm.toLowerCase()}, so we compare it with your own past days. That check starts after 5 days of readings.`, d: "" };
+      return { h: s === "ok" ? "No warning" : s === "watch" ? "Worth watching" : "Needs action", b: a.msg, d: a.action }
+    }
+    /* plain wording for readings the NASA file has no rule for (app's simple built-in ranges) */
+    function plainB(k) {
+      const v = V[k], r = R[k], s = mst0(k);
+      if (k === "mood") return s === "ok" ? { h: "Mood is good", b: `You rated it ${v} out of 10.`, d: "" } : s === "watch" ? { h: "Mood is lower than usual", b: `You rated it ${v} out of 10.`, d: "Take a short break, talk to a crewmate or family, and repeat the check tomorrow." } : { h: "Mood is very low", b: `You rated it ${v} out of 10.`, d: "Please talk to someone today: a crewmate, family, or the flight surgeon or psychologist." };
+      if (k === "glu") { const low = v < r.n[0]; return s === "ok" ? { h: "Blood sugar is normal", b: `${v} mg/dL is in the usual fasting range of 70 to 100.`, d: "" } : low ? { h: s === "watch" ? "Blood sugar is a little low" : "Blood sugar is low", b: `${v} mg/dL is below the usual fasting range of 70 to 100.`, d: "Have something with fast sugar, such as juice or a sweet snack, and measure again in 15 minutes. If it stays low or you feel shaky or confused, message the flight surgeon now." } : { h: s === "watch" ? "Blood sugar is a little high" : "Blood sugar is high", b: `${v} mg/dL is above the usual fasting range of 70 to 100.`, d: "Drink water, skip sugary snacks, take a 10-minute walk, and measure again in 2 hours. If it stays high, message the flight surgeon." } }
+      if (k === "ex") return s === "ok" ? { h: "Bone and muscle work on track", b: `${v} minutes of resistance exercise today.`, d: "" } : { h: s === "watch" ? "A bit behind on exercise" : "Behind on bone-protecting exercise", b: `${v} minutes of resistance exercise today. Resistance exercise is the main protection against bone and muscle loss in space.`, d: "Do a resistance session today and book the next ones." };
+      return { h: s === "ok" ? "Within range" : "Outside range", b: `${v} ${r.unit}`, d: "" }
+    }
+    const P = k => A[k] ? plain(k) : plainB(k);
+    const tagOf = k => { if (!A[k]) return "App's simple range, not NASA"; const t = A[k].type; return t === "personal_baseline" ? "Your own past days" : t === "uncited_default" ? "General medical rule, not NASA" : t === "note" ? "Needs 5 days of history" : "NASA-linked study" };
+    function srcLink(id) { const s = AX.src[id]; if (s && s.url && /^https?:/.test(s.url)) return `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(id)}</a>`; return esc(id) }
+    function sci(k) { const a = A[k]; return `<details><summary>Show the science</summary><p class="src">${esc(a.msg)}</p>${a.pending.map(p => `<p class="src">${esc(p)}</p>`).join("")}${k === "temp" ? `<p class="src">The NASA study measured core body temperature. A forehead reading is only an approximation.</p>` : ""}${a.src.length ? `<p class="src">Sources: ${a.src.map(srcLink).join(", ")}</p>` : ""}<p class="src">"What to do" texts are general safety advice written for this app, not NASA instructions.</p></details>` }
+    function metNote(k) { const p = plain(k); return `<div class="mh">${esc(p.h)}</div><p class="mb">${esc(p.b)}</p>${sci(k)}` }
+    function metBuilt(k) { const p = plainB(k), r = R[k]; return `<div class="mh">${esc(p.h)}</div><p class="mb">${esc(p.b)}</p><div class="rg">App's simple range, not from NASA: ${r.n[0]} to ${r.n[1]} ${r.unit}</div>` }
+    function zAct(z, d) {
+      const out = []; if (z === "head" && compList().length) out.push(COMP.d); for (const k of ZN[z].ms) { if (mst(k) !== "ok") { const p = P(k); if (p.d && !out.includes(p.d)) out.push(p.d) } }
+      return out.length ? out.map(esc).join("<br><br>") : d.action
+    }
+    const AREAS = [["chest", "Heart and breathing"], ["head", "Mind and cabin air"], ["skin", "Temperature"], ["abdomen", "Glucose"], ["legs", "Bones"]];
+    function nasaBox() {
+      const b = $("#nasa"), comp = compList();
+      const zs = AREAS.map(([z, nm]) => ({ z: z, nm: nm, s: zst(z), ms: ZN[z].ms.map(k => ({ k: k, s: mst(k), p: P(k) })) }));
+      const bad = zs.filter(a => a.s !== "ok"); let worst = "ok"; for (const a of zs) if (RANK[a.s] > RANK[worst]) worst = a.s;
+      const VD = { ok: ["All clear today", "All five areas look fine."], watch: [`Keep an eye on ${bad.length} area${bad.length > 1 ? "s" : ""}`, "Nothing urgent. Follow the steps below."], act: ["Act today", "Follow the steps below. If it does not improve, message the flight surgeon."] }[worst];
+      const all = zs.flatMap(a => a.ms).filter(m => m.s !== "ok").sort((x, y) => RANK[y.s] - RANK[x.s]), steps = []; if (comp.length) steps.push(COMP.d); for (const m of all) if (m.p.d && !steps.includes(m.p.d)) steps.push(m.p.d);
+      const area = a => {
+        const nb = a.ms.filter(m => m.s !== "ok").sort((x, y) => RANK[y.s] - RANK[x.s]), pain = V.pain === a.z, cmp = a.z === "head" && comp.length;
+        if (!nb.length && !pain && !cmp) return `<div class="nc ${a.s}"><div class="nh"><span class="an">${a.nm}</span><b>${LAB[a.s]}</b></div></div>`;
+        const detail = (pain ? `<div class="sb"><div class="nhead">Pain reported</div><p>${esc(PAINNOTE)}</p></div>` : "")
+          + (cmp ? `<div class="sb"><div class="nhead">${esc(COMP.h)}</div><p>${esc(COMP.b)}</p></div>` : "")
+          + nb.map(m => `<div class="sb"><div class="nhead">${esc(m.p.h)}<span class="tg">${esc(tagOf(m.k))}</span></div><p>${esc(m.p.b)}</p>${m.p.d ? `<p class="nd"><b>What to do:</b> ${esc(m.p.d)}</p>` : ""}${A[m.k] ? sci(m.k) : ""}</div>`).join("");
+        const hs = [...new Set([pain ? "Pain reported" : "", cmp ? COMP.h : "", ...nb.map(m => m.p.h)].filter(Boolean))], heads = hs.length > 3 ? hs.slice(0, 3).concat(`+${hs.length - 3} more`) : hs;
+        return `<div class="nc ${a.s}"><div class="nh"><span class="an">${a.nm}</span><b>${LAB[a.s]}</b></div><p class="vs" style="margin:6px 0 0">${heads.map(esc).join(" · ")}</p><details class="fine" style="margin-top:6px"><summary>Details</summary>${detail}</details></div>`
+      };
+      const waiting = zs.some(a => a.ms.some(m => A[m.k] && m.p.h === "No warning so far"));
+      b.innerHTML = (AX.ok ? "" : `<div class="esc" style="margin:0 0 12px">The NASA-based checker could not be reached (${esc(AX.err || "not run")}). Everything below uses the app's simple built-in ranges. Start it with: python3 astra_backend.py serve --port 8000</div>`)
+        + `<div class="kick">Your conclusion</div><div class="vh ${worst}"><i>${ICON[worst]}</i>${esc(VD[0])}</div><p class="vs">${esc(VD[1])}</p>`
+        + (steps.length ? `<div class="nx"><div class="nl">Do this now</div><ol>${steps.slice(0, 3).map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : "")
+        + zs.map(area).join("")
+        + `<details class="fine"><summary>Sources and fine print</summary>${waiting ? `<p class="src">Some readings are compared with your own past days. That check switches on after 5 days of readings.</p>` : ""}<p class="src">Glucose and resistance exercise use the app's simple built-in ranges where the NASA rule file has no rule for them.</p>${Object.keys(AX.src).map(id => { const s = AX.src[id]; return `<p class="src"><b>${srcLink(id)}</b>: ${esc(s.citation)} (${esc(s.nasa_link)}; checked: ${esc(s.verified)})</p>` }).join("")}<p class="src">This is a guide, not a doctor. Warnings from the NASA file describe results from NASA-linked studies. The cut-offs and "what to do" texts are this app's own choices. If you feel unwell, contact the flight surgeon.</p></details>`
+    }
+
+    const mst0 = k => { const v = V[k], r = R[k]; return v >= r.n[0] && v <= r.n[1] ? "ok" : v >= r.w[0] && v <= r.w[1] ? "watch" : "act" }; const mst = k => A[k] ? A[k].status : mst0(k);
+    const vd0 = k => V[k] < R[k].n[0] ? "Below range" : V[k] > R[k].n[1] ? "Above range" : "Within range"; const vd = k => A[k] ? ({ ok: "No flag", watch: "Watch", act: "Action needed" }[A[k].status]) : vd0(k);
+    const zst = z => NM[Math.max(RANK[ZO[z] || "ok"], V.pain === z ? RANK.watch : 0, ...ZN[z].ms.map(k => RANK[mst(k)]))];
+    function show(id) { $("#home").hidden = true; $("#app").hidden = false; document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== id); $("#startnav").hidden = true; $("#hbtn").hidden = false; scrollTo(0, 0) }
+    function stopG() { if (gi) { clearInterval(gi); gi = null } }
+    function goHome() { stopG(); $("#app").hidden = true; $("#home").hidden = false; $("#startnav").hidden = false; $("#hbtn").hidden = true; scrollTo(0, homeY) }
+    function startMeasure() { if (!$("#home").hidden) homeY = scrollY; stopG(); for (const k in done) delete done[k]; STEPS.forEach(S => S.f.forEach(f => { if (V[f.k] == null) V[f.k] = f.v })); st = 0; show("v-measure"); step() }
+    function step() {
+      const S = STEPS[st]; $("#progbar").style.width = (st / STEPS.length * 100) + "%";
+      $("#mbody").innerHTML = `<div class="crumb">Measurement ${st + 1} of ${STEPS.length}</div><h2>${S.title}</h2><p class="sub">${S.why}</p><div class="two"><div class="box"><h3>How to measure</h3><ol>${S.how.map(x => `<li>${x}</li>`).join("")}</ol></div><div class="box"><h3>Enter your reading</h3>${S.f.map(f => f.opts ? `<div class="fld"><label for="i_${f.k}">${f.label}</label><select id="i_${f.k}"><option value="" hidden ${V[f.k] ? "" : "selected"}>Choose only if you have pain</option>${f.opts.map(o => `<option value="${o[0]}" ${V[f.k] === o[0] ? "selected" : ""}>${o[1]}</option>`).join("")}</select><button class="btn" id="pclr" type="button" style="margin-top:8px">No pain</button></div>` : f.r ? `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="range" id="i_${f.k}" min="${f.min}" max="${f.max}" value="${V[f.k]}"><output id="o_${f.k}">${V[f.k]}</output></div>` : `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="number" id="i_${f.k}" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${V[f.k]}"></div>`).join("")}<div class="err" id="err" role="alert"></div></div></div><div class="nav2"><button class="btn" id="bk" type="button" ${st ? "" : "disabled"}>Back</button><button class="btn p" id="nx" type="button">${st === STEPS.length - 1 ? "Run analysis" : "Next"}</button></div>`;
+      S.f.forEach(f => { const i = $("#i_" + f.k); i.oninput = () => { V[f.k] = f.opts ? i.value : parseFloat(i.value); if (f.r) $("#o_" + f.k).textContent = i.value } }); const pc = $("#pclr"); if (pc) pc.onclick = () => { V.pain = ""; $("#i_pain").selectedIndex = 0 };
+      $("#bk").onclick = () => { st--; step() };
+      $("#nx").onclick = () => { for (const f of S.f) { if (f.opts) continue; const v = V[f.k]; if (isNaN(v) || v < f.min || v > f.max) { $("#err").textContent = `Enter ${f.label.toLowerCase()} between ${f.min} and ${f.max}.`; return } } if (st < STEPS.length - 1) { st++; step() } else analyze() }
+    }
+    function analyze() {
+      const call = askBackend(); show("v-analyze"); $("#progbar").style.width = "100%"; const msg = ["Checking heart and blood pressure…", "Comparing glucose and temperature…", "Reviewing sleep, mood and fatigue…", "Scoring bone health…", "Building your body report…"]; let i = 0; $("#aprog").style.width = "0";
+      const t = () => { $("#ap").textContent = msg[i]; $("#aprog").style.width = ((i + 1) / msg.length * 100) + "%"; i++; if (i >= msg.length) { clearInterval(iv); call.then(() => { saveCrew(); setTimeout(() => results(), 600) }) } }; const iv = setInterval(t, 600); t()
+    }
+    function bar(k) { const r = R[k], lo = r.w[0] - (r.w[1] - r.w[0]) * .3, hi = r.w[1] + (r.w[1] - r.w[0]) * .3, p = x => Math.min(100, Math.max(0, (x - lo) / (hi - lo) * 100)); return `<div class="bar" aria-hidden="true"><div class="n" style="left:${p(r.n[0])}%;width:${p(r.n[1]) - p(r.n[0])}%"></div><div class="mk" style="left:${p(V[k])}%"></div></div>` }
+    function results(z) {
+      show("v-results"); const zs = Object.keys(ZN), bad = zs.filter(k => zst(k) !== "ok");
+      $("#rs").textContent = bad.length ? `${bad.length} of ${zs.length} areas are outside the normal range. Tap a body area to see why.` : "All areas are within the normal range. Tap a body area for details.";
+      document.querySelectorAll("#fwrap .zone,#fwrap .zlit,#fwrap .albl").forEach(e => { e.classList.remove("s-ok", "s-watch", "s-act"); e.classList.add("s-" + zst(e.dataset.zone)) }); document.querySelectorAll("#fwrap .zd,#fwrap .zp,#fwrap .zl").forEach(e => { const z = e.dataset.zone || e.previousElementSibling.dataset.zone; e.classList.remove("s-ok", "s-watch", "s-act"); e.classList.add("s-" + zst(z)) }); try { sessionStorage.astraV = JSON.stringify(V); sessionStorage.astraWho = CUR.id } catch (e) { } nasaBox(); predBox(); document.querySelector("#v-results .crumb").textContent = "Analysis complete · " + CUR.name;
+      $("#attn").innerHTML = zs.map(k => `<button class="tile" type="button" data-z="${k}" aria-pressed="false"><span><i class="${zst(k)}">${ICON[zst(k)]}</i>${D[k].short}</span><b class="mono">${V[TV[k]]}</b></button>`).join("");
+      $("#attn").querySelectorAll("button").forEach(b => b.onclick = () => pick(b.dataset.z)); pick(z || bad[0] || "head")
+    }
+    const TV = { head: "fat", chest: "hr", abdomen: "glu", skin: "temp", legs: "ex" }, MT = { mood: "head", fat: "head", pvt: "head", poms: "head", headache: "head", sms: "head", co2: "head", sleep: "sleep", seff: "sleep", circ: "sleep", hr: "chest", sys: "chest", dia: "chest", sv: "chest", spo2: "chest", dizzy: "chest", aero: "chest", vo2: "chest", glu: "abdomen", ex: "legs", temp: "skin", tpeak: "skin" },
+      DEFTAB = { head: "head", chest: "chest", abdomen: "abdomen", skin: "skin", legs: "legs" };   /* every body area has an exercise tab, so "Need action" always opens exercises */
+    /* exercise page for the worst out-of-range reading in an area (none for temperature) */
+    function exTab(z) { const bad = ZN[z].ms.filter(k => mst(k) !== "ok").sort((a, b) => RANK[mst(b)] - RANK[mst(a)]); for (const k of bad) if (MT[k]) return MT[k]; return null }
+    function toEx(t) { try { sessionStorage.astraBack = "results" } catch (e) { } location.href = "exercises.html#" + t }
+    function pick(z) {
+      curZ = z; const s = zst(z), t = exTab(z), d = D[z]; document.querySelectorAll("#fwrap [data-zone]").forEach(e => e.classList.toggle("sel", e.dataset.zone === z));
+      document.querySelectorAll("#attn .tile").forEach(b => b.setAttribute("aria-pressed", b.dataset.z === z)); $("#rp").dataset.exercise = t || "none";
+      const tr = d.trend.slice(0, -1).concat(+V[TV[z]]);
+      $("#rp").innerHTML = `<h3>${ZN[z].name}</h3><p class="func">${d.func}</p><span class="badge ${s}">${{ ok: "●", watch: "▲", act: "■" }[s]} ${LAB[s]}</span>${V.pain === z ? `<div class="note"><b>Pain reported here.</b> ${PAINNOTE}</div>` : ""}${ZN[z].ms.map(k => { const r = R[k], c = mst(k); return `<div class="met"><div class="t"><b>${r.name}</b><span class="chip ${c}">${vd(k)}</span></div><div class="v mono">${V[k]}<span class="u">${r.unit}</span></div>${A[k] ? metNote(k) : bar(k) + metBuilt(k)}${c !== "ok" && MT[k] ? `<button class="exgo" type="button" data-go="${MT[k]}">Open exercises for this</button>` : ""}</div>` }).join("")}<div class="trend"><span class="rg">Recent trend (sample history, today last)</span>${spark(tr, CSS[s])}</div><dl><div><dt>Why spaceflight affects this</dt><dd>${d.why}</dd></div><div><dt>What to do</dt><dd>${zAct(z, d)}</dd></div><div><dt>How to measure</dt><dd>${d.how}</dd></div></dl>${s !== "ok" && d.esc ? `<div class="esc">${d.esc}</div>` : ""}${s !== "ok" && !done[z] ? `<button class="btn ${s === "act" ? "act" : "p"}" id="needact" type="button" style="margin-top:14px">Need action</button>` : ""}${done[z] ? `<div class="note">Action logged. Measure again after your next session.</div>` : ""}`;
+      const n = $("#needact"); if (n) n.onclick = () => action(z); $("#rp").querySelectorAll("[data-go]").forEach(b => b.onclick = () => toEx(b.dataset.go))
+    }
+    function action(z) {
+      stopG();
+      /* safety plans stay as plans: pain with nothing else flagged, and low fasting glucose (eat first, exercise later) */
+      const pOnly = V.pain === z && !ZO[z] && !ZN[z].ms.some(k => mst(k) !== "ok");
+      if (pOnly || (z === "abdomen" && V.glu < 70)) { plan(z); return }
+      toEx(exTab(z) || DEFTAB[z])
+    }
+    function plan(z) {
+      const s = zst(z), pOnly = V.pain === z && !ZO[z] && !ZN[z].ms.some(k => mst(k) !== "ok"), P = pOnly ? PAINPLAN : z === "abdomen" && V.glu < 70 ? { t: "Low blood sugar plan", p: "Fasting glucose is below the normal range.", s: ["Eat or drink something with fast sugar, such as juice or a sweet snack.", "Measure again in 15 minutes.", "Rest until you feel steady.", "If it stays low or you feel shaky or confused, message the flight surgeon now."] } : PLAN[z]; show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · ${ZN[z].name}</div><h2>${P.t}</h2><p class="sub">${P.p}</p><div class="box"><ul class="acts">${P.s.map((x, i) => `<li><input type="checkbox" id="c${i}"><label for="c${i}">${x}</label></li>`).join("")}</ul></div>${s === "act" ? `<div class="esc">Your reading is well outside the normal range. Message the flight surgeon if it does not improve.</div>` : ""}<div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="dn" type="button" disabled>Mark as done</button></div>`;
+      const cs = [...document.querySelectorAll("#abody input")]; cs.forEach(c => c.onchange = () => $("#dn").disabled = !cs.every(x => x.checked)); $("#back").onclick = () => results(z); $("#dn").onclick = () => { done[z] = true; results(z) }
+    }
+    function exercise() {
+      show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · Bone health</div><h2>Bone health session</h2><p class="sub">You logged ${V.ex} minutes of resistance exercise today. Follow four short moves to add one. It takes about one minute.</p><div class="box"><ol><li>Clear some space around you and secure loose items.</li><li>Follow the figure and the instruction on screen.</li><li>Every rep earns 10 points.</li></ol></div><div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="go" type="button">Start session</button></div>`;
+      $("#back").onclick = () => results("legs"); $("#go").onclick = () => { G = { i: 0, t: 0, reps: 0, pts: 0, pause: false }; game(); gi = setInterval(tick, 250) }
+    }
+    function game() {
+      const m = MOVES[G.i]; $("#abody").innerHTML = `<div class="crumb">Move ${G.i + 1} of ${MOVES.length}</div><h2>${m.n}</h2><p class="sub">${m.t}</p><div class="ex"><svg class="sf ${m.c}" viewBox="0 0 200 250" role="img" aria-label="Figure demonstrating ${m.n}"><line x1="40" y1="222" x2="160" y2="222" style="stroke:#2a3a6b;stroke-width:3"/><g id="bd"><circle cx="100" cy="40" r="17"/><line x1="100" y1="60" x2="100" y2="140"/><g id="aL"><line x1="100" y1="76" x2="82" y2="136"/></g><g id="aR"><line x1="100" y1="76" x2="118" y2="136"/></g><g id="lL"><line x1="100" y1="140" x2="86" y2="218"/></g><g id="lR"><line x1="100" y1="140" x2="114" y2="218"/></g></g></svg>
+<div><div class="ringt"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="70" fill="none" stroke="rgba(120,150,230,.2)" stroke-width="10"/><circle id="gring" cx="80" cy="80" r="70" fill="none" stroke="var(--blue)" stroke-width="10" stroke-linecap="round" stroke-dasharray="440" stroke-dashoffset="440"/></svg><b id="gt" class="mono">15</b></div><div class="stats"><div><b id="gr">0 / 5</b>Reps</div><div><b id="gp">${G.pts}</b>Points</div></div><button class="btn" id="gpz" type="button">Pause</button> <button class="btn" id="gsk" type="button">Skip move</button></div></div>`;
+      $("#gpz").onclick = e => { G.pause = !G.pause; e.target.textContent = G.pause ? "Resume" : "Pause" }; $("#gsk").onclick = () => next()
+    }
+    function tick() {
+      if (G.pause) return; G.t += .25; const r = Math.floor(G.t / 3); if (r > G.reps) { G.reps = r; G.pts += 10 }
+      if (G.t >= 15) { next(); return } $("#gt").textContent = Math.ceil(15 - G.t); $("#gring").style.strokeDashoffset = 440 * (1 - G.t / 15); $("#gr").textContent = G.reps + " / 5"; $("#gp").textContent = G.pts
+    }
+    function next() { G.i++; G.t = 0; G.reps = 0; if (G.i >= MOVES.length) { stopG(); fin(); return } game() }
+    function fin() { $("#abody").innerHTML = `<div class="crumb">Session complete</div><h2>Nice work. +${G.pts} points</h2><p class="sub">You finished all ${MOVES.length} moves. Log this session to update your bone health plan.</p><div class="nav2"><button class="btn" id="back" type="button">Discard</button><button class="btn p" id="dn" type="button">Log session and return</button></div>`; $("#back").onclick = () => results("legs"); $("#dn").onclick = () => { done.legs = true; results("legs") } }
+    /* ---------- three crew members (names are editable here) ---------- */
+    /* ids match astronaut_id in the loaded CSVs (A01-A03) so each person is checked against their own 30-day history */
+    const CREW = [{ id: "A01", name: "Crew 1" }, { id: "A02", name: "Crew 2" }, { id: "A03", name: "Crew 3" }];
+    let CUR = CREW[0]; try { CUR = CREW.find(c => c.id === localStorage.astraCur) || CREW[0] } catch (e) { }
+    function loadAll() { try { return JSON.parse(localStorage.astraCrewData || "{}") } catch (e) { return {} } }
+    function saveAll(o) { try { localStorage.astraCrewData = JSON.stringify(o) } catch (e) { } }
+    function clearState() { for (const k in V) delete V[k]; for (const k in A) delete A[k]; for (const k in ZO) delete ZO[k]; AX.ok = false; AX.err = ""; AX.reports = []; AX.src = {}; AX.labels = {} }
+    function loadState(d) { clearState(); if (!d) return; Object.assign(V, d.V || {}); Object.assign(A, d.A || {}); Object.assign(ZO, d.ZO || {}); const x = d.AX || {}; AX.ok = !!x.ok; AX.err = x.err || ""; AX.reports = x.reports || []; AX.src = x.src || {}; AX.labels = x.labels || {} }
+    function setCrew(id) { CUR = CREW.find(c => c.id === id) || CUR; try { localStorage.astraCur = CUR.id } catch (e) { } loadState(loadAll()[CUR.id]); renderCrew() }
+    function saveCrew() {
+      const zs = Object.keys(ZN); let o = "ok"; for (const z of zs) if (RANK[zst(z)] > RANK[o]) o = zst(z);
+      const c = []; for (const z of zs) for (const k of ZN[z].ms) { const s = mst(k); if (s !== "ok") c.push({ s: s, t: R[k].name + ": " + P(k).h }) } if (V.pain && ZN[V.pain]) c.push({ s: "watch", t: "Pain reported: " + ZN[V.pain].name }); c.sort((a, b) => RANK[b.s] - RANK[a.s]);
+      const all = loadAll(); const zsn = {}; for (const z of zs) zsn[z] = zst(z); zsn.sleep = NM[Math.max(...["sleep", "seff", "circ"].map(k => RANK[mst(k)]))];   /* area statuses, read by exercises.html for its tab colours */
+      try { localStorage.astraCur = CUR.id } catch (e) { }
+      all[CUR.id] = { ts: Date.now(), zs: zsn, V: Object.assign({}, V), A: Object.assign({}, A), ZO: Object.assign({}, ZO), AX: AX, sum: { o: o, c: c.slice(0, 3) } }; saveAll(all); renderCrew()
+    }
+    function renderCrew() {
+      const b = $("#crewbox"); if (!b) return; const all = loadAll(), done = CREW.filter(c => all[c.id]), need = done.filter(c => all[c.id].sum.o === "act").length, watch = done.filter(c => all[c.id].sum.o === "watch").length;
+      b.innerHTML = `<h3>Crew</h3><p class="cmsum">${done.length} of ${CREW.length} crew members measured${done.length ? `: ${need} need action, ${watch} on watch.` : "."} Tap a card to choose who is measuring. Each person keeps their own history and 7-day comparison.</p><div class="crew">${CREW.map(c => {
+        const d = all[c.id], s = d && d.sum.o;
+        return `<div class="cm ${c.id === CUR.id ? "cur" : ""}" data-id="${c.id}"><div class="cmh"><b>${esc(c.name)}</b>${s ? `<span class="badge ${s}">${ICON[s]} ${LAB[s]}</span>` : `<span class="badge none">Not measured</span>`}</div><div class="rg">${d ? "Last measured " + esc(new Date(d.ts).toLocaleString()) : "No readings yet"}</div>${d && d.sum.c.length ? `<ul>${d.sum.c.map(x => `<li class="${x.s}"><span style="color:#b8c5e6">${esc(x.t)}</span></li>`).join("")}</ul>` : d ? `<p class="cmsum" style="margin-top:8px">No concerns in the last check.</p>` : ""}<div class="cmb"><button class="btn p" type="button" data-a="measure" data-id="${c.id}">Measure</button>${d ? `<button class="btn" type="button" data-a="view" data-id="${c.id}">View report</button>` : ""}</div></div>`
+      }).join("")}</div>`;
+      const cta = $("#cta"); if (cta) cta.textContent = "Start full-body measurement · " + CUR.name
+    }
+    $("#crewbox").addEventListener("click", e => {
+      const btn = e.target.closest("button[data-a]"), card = e.target.closest(".cm"); if (!card) return; const id = (btn || card).dataset.id;
+      if (btn) { e.stopPropagation(); if (id !== CUR.id) setCrew(id); if (btn.dataset.a === "measure") startMeasure(); else { homeY = scrollY; results() } } else if (id !== CUR.id) setCrew(id)
+    });
+    /* ---------- what the checker predicted: only what matters, in plain words ---------- */
+    /* each crew member's saved days come from the loaded CSVs (astra.db) via /subjects/<id>/history; used for the small "last 14 days" lines */
+    const HIST = {};
+    async function loadHist(id) {
+      if (HIST[id] !== undefined) return HIST[id];
+      try { const r = await fetch(API + "/subjects/" + encodeURIComponent(id) + "/history"); HIST[id] = r.ok ? await r.json() : null } catch (e) { HIST[id] = null }
+      return HIST[id];
+    }
+    const FLAGS = ["circ", "headache", "dizzy"];
+    function sparkSvg(pts, today, color, band) {
+      const W = 140, H = 32, all = pts.map(p => p[1]).concat([today]), lo = Math.min(...all, band ? band[0] : Infinity), hi = Math.max(...all, band ? band[1] : -Infinity), sp = (hi - lo) || 1;
+      const x = i => 4 + i * (W - 8) / (pts.length), y = v => H - 4 - (v - lo) / sp * (H - 8), line = pts.map((p, i) => x(i).toFixed(1) + "," + y(p[1]).toFixed(1)).join(" ");
+      const bd = band ? `<rect x="0" y="${y(band[1]).toFixed(1)}" width="${W}" height="${Math.max(2, y(band[0]) - y(band[1])).toFixed(1)}" fill="rgba(143,160,201,.16)" rx="3"/>` : "";
+      return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Your recent days and today">${bd}<polyline points="${line}" fill="none" stroke="#8fa0c9" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><line x1="${x(pts.length - 1).toFixed(1)}" y1="${y(pts[pts.length - 1][1]).toFixed(1)}" x2="${x(pts.length).toFixed(1)}" y2="${y(today).toFixed(1)}" stroke="${color}" stroke-width="1.8" stroke-dasharray="3 3"/><circle cx="${x(pts.length).toFixed(1)}" cy="${y(today).toFixed(1)}" r="4" fill="${color}"/></svg>`;
+    }
+    async function fillSpark(who) {
+      const h = await loadHist(who); if (!h || who !== CUR.id) return;
+      document.querySelectorAll("#pred .pv-spark").forEach(el => {
+        const k = el.dataset.k, bk = BK[k]; if (!bk || FLAGS.includes(k) || typeof V[k] !== "number") return;
+        const sc = SC[k] || 1, pts = h.filter(r => r.group === bk[0] && r.indicator === bk[1] && r.day < MDAY && typeof r.value === "number").sort((a, c) => a.day - c.day).slice(-14).map(r => [r.day, r.value * sc]);
+        if (pts.length < 3) return;
+        const bl = A[k] && A[k].base, band = bl ? [(bl.mean - bl.sd) * sc, (bl.mean + bl.sd) * sc] : null, col = getComputedStyle(el.closest(".pv-card")).getPropertyValue("--c") || "#ffb020";
+        el.innerHTML = sparkSvg(pts, V[k], col.trim(), band) + `<span>Your last ${pts.length} days, then today${band ? " (grey = your usual range)" : ""}</span>`;
+      });
+    }
+    /* short plain wording for combined patterns and for yes/no symptoms (written for this app, not NASA text) */
+    const CP = {
+      sleep_loss_plus_performance_decline: { h: "Short sleep is starting to show", w: "You are sleeping less and your focus or energy has dropped from your usual.", d: "Protect tonight's sleep: fixed bedtime, dim lights, no late caffeine." },
+      persistent_sleep_loss_plus_circadian_misalignment: { h: "Your body clock and sleep are out of step", w: "Your sleep times have been off for several days and it is affecting how you feel.", d: "Keep the same sleep and wake times each day and get bright light in the morning." },
+      reduced_exercise_plus_vo2_decline: { h: "Less exercise is affecting your fitness", w: "You are exercising less than planned and your stamina has dropped.", d: "Book your next exercise sessions with the exercise team." },
+      orthostatic_symptoms_plus_cardiovascular_change: { h: "Dizziness may be linked to your heart and blood pressure", w: "You feel dizzy on standing and your heart readings have changed.", d: "Stand up slowly and ask the flight surgeon to take a look today." },
+      elevated_co2_plus_headache_or_sleep_disruption: { h: "Cabin air may be causing symptoms", w: "CO2 is high and you have a headache or poor sleep.", d: "Check ventilation and tell the flight surgeon about your symptoms." },
+      exercise_heat_strain_pattern: { h: "Your body ran hot during exercise", w: "Your temperature climbed higher than usual while you exercised.", d: "Cool down with slow breathing and an easy walk, and drink water." }
+    };
+    const FP = {
+      dizzy: { h: "You felt dizzy on standing", w: "Standing up can make you lightheaded after time in space.", d: "Stand up slowly and sit down if it happens. Tell the flight surgeon if it keeps happening." },
+      headache: { h: "You have a headache", w: "Headaches in flight often come from cabin CO2 or poor sleep.", d: "Drink water, rest, and check the airflow. Tell the flight surgeon if it lasts." },
+      circ: { h: "Your body clock is out of step", w: "Your sleep and wake times are off from your usual rhythm.", d: "Keep sleep and wake times the same each day and get bright light in the morning." }
+    };
+    function predBox() {
+      const b = $("#pred"); if (!b) return;
+      const first = (t, n = 120) => { t = String(t || "").trim(); const m = t.match(/^.*?[.!?](\s|$)/); t = m ? m[0].trim() : t; return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : t };
+      const keys = [...new Set(AREAS.flatMap(([z]) => ZN[z].ms))], rows = keys.map(k => ({ k: k, s: mst(k), p: P(k) }));
+      const bad = rows.filter(r => r.s !== "ok").sort((x, y) => RANK[y.s] - RANK[x.s]), good = rows.filter(r => r.s === "ok");
+      const comp = compList().sort((x, y) => RANK[y.status] - RANK[x.status]);
+      const worst = [...bad.map(r => r.s), ...comp.map(c => c.status)].reduce((a, s) => RANK[s] > RANK[a] ? s : a, "ok");
+      const IC = { ok: "●", watch: "▲", act: "■" }, COL = { ok: "var(--ok)", watch: "var(--watch)", act: "var(--act)" };
+      const head = { ok: ["All clear today", "Nothing needs your attention."], watch: ["Keep an eye on " + (bad.length + comp.length > 1 ? "a few things" : "one thing"), "Nothing urgent. Here is what stands out."], act: ["Please act today", "Start with the first card. If it does not improve, message the flight surgeon."] }[worst];
+      const cards = [
+        ...comp.slice(0, 1).map(c => { const t = CP[c.id] || {}; return { s: c.status, h: t.h || "Several readings point the same way", why: t.w || first(c.message, 150), do: t.d || "Tell the flight surgeon if it continues.", k: null, tag: "Readings together" } }),
+        ...bad.map(r => { const t = FP[r.k] || {}; return { s: r.s, h: t.h || r.p.h, why: t.w || first(r.p.b), do: t.d || first(r.p.d, 130), k: r.k, tag: R[r.k].name } })
+      ], shown = cards.slice(0, 3), extra = cards.length - shown.length;
+      const card = c => `<div class="pv-card ${c.s}"><div class="pv-ic" aria-hidden="true">${IC[c.s]}</div><div><div class="t"><b>${esc(c.h)}</b><span>${esc(c.tag)} · ${LAB[c.s]}</span></div>${c.why ? `<p>${esc(c.why)}</p>` : ""}${c.do ? `<p class="pv-do">${esc(c.do)}</p>` : ""}${c.k ? `<div class="pv-spark" data-k="${c.k}"></div>` : ""}</div></div>`;
+      const pct = Math.round(good.length / Math.max(1, rows.length) * 100);
+      b.innerHTML = `<div class="pv-hero"><div class="pv-ring" style="--c:${COL[worst]};--p:${pct}"><div><span><b>${good.length}/${rows.length}</b><small>look fine</small></span></div></div><div><h4>${head[0]}</h4><p>${head[1]}</p></div></div>`
+        + (AX.ok ? "" : `<div class="esc" style="margin:10px 0">The NASA-based checker was not reached, so only the app's simple ranges were used.</div>`)
+        + (shown.length ? `<div class="pv-h">What matters most</div><div class="pv-cards">${shown.map(card).join("")}</div>` + (extra > 0 ? `<p class="pv-more">+ ${extra} more flagged. Open your report for the full list.</p>` : "") : "")
+        + (good.length ? `<details class="pv-fine"><summary>${good.length} reading${good.length > 1 ? "s" : ""} look fine</summary><div class="pv-chips">${good.map(r => `<span>✓ ${esc(R[r.k].name)}</span>`).join("")}</div></details>` : "")
+        + `<p class="pv-foot">Compared with your own last 7 days and with what crew on the station typically show. This is a guide, not a diagnosis. If you feel unwell, message the flight surgeon.</p>`;
+      if (AX.ok) fillSpark(CUR.id);
+    }
+    renderCrew();
+    document.querySelectorAll("#fwrap .zone,#fwrap .albl").forEach(e => { e.onmouseenter = e.onfocus = () => document.querySelectorAll(`#fwrap [data-zone="${e.dataset.zone}"]`).forEach(x => x.classList.add("hv")); e.onmouseleave = e.onblur = () => document.querySelectorAll("#fwrap .hv").forEach(x => x.classList.remove("hv")); e.onclick = () => pick(e.dataset.zone); e.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); pick(e.dataset.zone) } } });
+    function report() { show("v-report"); $("#rcrumb").textContent = "Report · " + CUR.name } function preds() { show("v-pred"); $("#pcrumb").textContent = "Predictions · " + CUR.name }
+    const on = (q, f) => { const e = $(q); if (e) e.onclick = f }; on("#cta", startMeasure); on("#startnav", startMeasure); on("#hbtn", goHome); on("#brand", goHome); on("#again", startMeasure); on("#home2", goHome); on("#toreport", report); on("#rback", () => results(curZ)); on("#rhome", goHome); on("#topred", preds); on("#pback", report); on("#phome", goHome);
+    loadState(loadAll()[CUR.id]); renderCrew();   /* restore the saved crew member's last report on page load (was only restored after switching crew) */
+    if (location.hash === "#results") { try { const w = sessionStorage.astraWho; if (w) CUR = CREW.find(c => c.id === w) || CUR; renderCrew(); const s = JSON.parse(sessionStorage.astraV || "null"); if (s) { Object.assign(V, s); const sa = JSON.parse(sessionStorage.astraA || "null"); if (sa) { Object.assign(A, sa.A); Object.assign(ZO, sa.ZO); Object.assign(AX, sa.AX) } results() } } catch (e) { } history.replaceState(null, "", location.pathname + location.search) }
+    addEventListener("resize", layout); layout(); frame();
+    /* redesign: glass nav once past the hero or inside the app views */
+    (function () {
+      const nav = $("#nav"), track = $("#track"), home = $("#home"), app = $("#app");
+      function upd() { nav.classList.toggle("solid", !app.hidden || (!home.hidden && scrollY > track.offsetHeight - innerHeight * .9)) }
+      addEventListener("scroll", upd, { passive: true }); addEventListener("resize", upd);
+      new MutationObserver(upd).observe(app, { attributes: true, attributeFilter: ["hidden"] });
+      new MutationObserver(upd).observe(home, { attributes: true, attributeFilter: ["hidden"] }); upd()
+    })();
+  </script>
+  <script src="exercise-links.js"></script>
+</body>
+
+</html>
