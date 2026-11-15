@@ -23,7 +23,7 @@ Open the application at:
 
 ## Dataset and Indicators
 
-This version uses rules **v5.1.0-compact20**, containing 20 indicators:
+This version uses rules, containing 20 indicators:
 
 - 16 crew indicators
 - 1 motion sickness indicator
@@ -77,16 +77,4 @@ For example:
 
 However, baselines and reference values are never pooled across groups.
 
-## Running Tests
-
-Run the test suite with:
-
-```bash
-pytest
-```
-
-The API test requires the project dependencies to be installed first:
-
-```bash
-pip install -r requirements.txt
 ```
