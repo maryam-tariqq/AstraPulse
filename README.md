@@ -77,4 +77,3 @@ For example:
 
 However, baselines and reference values are never pooled across groups.
 
-```
