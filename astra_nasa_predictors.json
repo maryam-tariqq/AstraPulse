@@ -1,0 +1,1910 @@
+{
+ "meta": {
+  "name": "ASTRA PULSE - NASA-sourced predictor / reference file",
+  "version": "1.0.0",
+  "created": "2026-11-15",
+  "purpose": "Reference values, rules and citations that the backend uses to judge your own readings by crew / motion-sickness / body-temperature group. Contains no synthetic data.",
+  "how_to_read": {
+   "cited_rules": "Threshold tiers taken from a named source. status = ok | watch | act.",
+   "reference": "Mean and spread from a NASA table; the backend converts them to a z-score and percentile. SD = SEM*sqrt(n) when only SEM is given.",
+   "baseline_bad / baseline_min_sd": "Personal-baseline rule (your last 7 days). The direction and the minimum SD are IMPLEMENTATION DEFAULTS chosen by the author, not NASA values.",
+   "no_nasa_reference": "Indicator for which no NASA numeric norm was found. Only your own baseline is applied. Nothing is invented for these.",
+   "uncited_defaults": "Generic clinical conventions, NOT NASA-cited; only shown as notices unless include_uncited_defaults=true."
+  },
+  "statistics": {
+   "z_watch": 2.0,
+   "z_act": 3.0,
+   "note": "z >= 2 (about 95%) = watch and z >= 3 (about 99.7%) = act is a statistical convention used by this app. It is not a NASA clinical limit."
+  },
+  "personal_baseline": {
+   "window_days": 7,
+   "min_days": 5,
+   "same_phase_only": true,
+   "fallback_min_sd_fraction": 0.05,
+   "note": "Baseline = mean/SD of the daily values from the previous 7 calendar days (same mission phase). Needs at least 5 days of data; sparse indicators override window/min days."
+  },
+  "limitations": [
+   "EDOMP Table 1-2 gives mean +/- SEM only and does not state n per cell; n=32 (the DSO 466 study size) is ASSUMED to turn SEM into SD. Individual ranges are therefore approximate and wide.",
+   "EDOMP data are from short Shuttle flights (4-16 days). In-flight numeric heart-rate/BP norms for long ISS stays were not extracted; only the direction of change is used.",
+   "Items marked PROVISIONAL (sleep efficiency, WASO) come from one slide table with unclear sample size.",
+   "Several sources were read only as abstracts/excerpts (see each source's 'verified' field). Journal full text should be opened before publishing.",
+   "No NASA-cited numeric reference was found for: respiratory rate, fatigue rating, reaction time, PVT lapse counts, POMS, aerobic minutes, symptom scores, cabin temperature/humidity, sex/age/BMI effects. They are checked only against your own baseline.",
+   "Messages describe what the cited sources found. 'action' texts are general safety advice written by the app author, not NASA instructions.",
+   "This is a student/research tool, not medical advice. Real symptoms need a clinician or flight surgeon."
+  ]
+ },
+ "sources": {
+  "edomp_cv": {
+   "citation": "Charles JB, Fritsch-Yelle JM, Whitson PA, Wood ML, Brown TE, Fortner GW. Cardiovascular Deconditioning (Section 1), Extended Duration Orbiter Medical Project (EDOMP) final report. NASA Johnson Space Center.",
+   "nasa_link": "NASA-authored (JSC Cardiovascular Laboratory)",
+   "url": "https://ntrs.nasa.gov/api/citations/20040201532/downloads/20040201532.pdf",
+   "verified": "full_text_read",
+   "used_for": "Table 1-2 (mean+/-SEM HR/BP, preflight, landing day, L+7-10), Table 1-6 (presyncopal vs non-presyncopal landing-day stand test), in-flight HR/BP direction, landing-day stress"
+  },
+  "fritsch_yelle_1996": {
+   "citation": "Fritsch-Yelle JM, Charles JB, Crockett MJ, Wood ML. Microgravity decreases heart rate and arterial pressure in humans. J Appl Physiol 80(3):910-914, 1996.",
+   "nasa_link": "NASA JSC authors (cited inside EDOMP report as ref. 10)",
+   "url": null,
+   "verified": "abstract_and_edomp_summary_read",
+   "used_for": "In flight, heart rate and diastolic pressure were significantly reduced vs preflight in Shuttle astronauts"
+  },
+  "co2_ochmo": {
+   "citation": "NASA Office of the Chief Health and Medical Officer, Technical Brief OCHMO-TB-004: Carbon Dioxide. Quotes NASA-STD-3001 Vol 2 Rev D requirement [V2 6004].",
+   "nasa_link": "NASA-authored (OCHMO)",
+   "url": "https://www.nasa.gov/ochmo-tb-004-carbon-dioxide-2/",
+   "verified": "web_page_excerpts_read",
+   "used_for": "1-hour average ppCO2 limit of 3 mmHg; 7-day average <2.5 mmHg keeps headache incidence below 1%; symptom list at 3.5 and 4.5-5.0 mmHg"
+  },
+  "co2_law_2016": {
+   "citation": "Law J, Alexander D. (NASA JSC). NASA report JSC-CN-34542 (NTRS 20150019624), AsMA Annual Meeting, 24 Apr 2016: ISS CO2-related crew symptoms and the operational CO2 limit. (Exact title not re-verified.)",
+   "nasa_link": "NASA-authored (JSC)",
+   "url": "https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20150019624.pdf",
+   "verified": "abstract_read",
+   "used_for": "ISS crew reported CO2 symptoms from 2.3 mmHg; operational limit moved to 3.0 mmHg (earlier 4.0 mmHg 24-h average since 2010)"
+  },
+  "barger_2014": {
+   "citation": "Barger LK, Flynn-Evans EE, Kubey A, Walsh L, Ronda JM, Wang W, Wright KP, Czeisler CA. Prevalence of sleep deficiency and use of hypnotic drugs in astronauts before, during, and after spaceflight. Lancet Neurol 2014;13:904-912. doi:10.1016/S1474-4422(14)70122-X",
+   "nasa_link": "NASA- and NSBRI-funded; 64 Shuttle + 21 ISS astronauts",
+   "url": "https://www.eurekalert.org/news-releases/541449",
+   "verified": "press_release_and_summaries_read (journal full text not opened)",
+   "used_for": "8.5 h scheduled sleep; mean 5.96 h (Shuttle) / 6.09 h (ISS); sleep >=7 h on only 12% / 24% of nights"
+  },
+  "jones_2022_sleep": {
+   "citation": "Sleep deficiency in spaceflight is associated with degraded neurobehavioral functions and elevated stress in astronauts on six-month missions aboard the International Space Station. Sleep 2022 (PMC8919197). N=24 astronauts, Reaction Self Test; approved by NASA JSC IRB. (Author list not re-verified here.)",
+   "nasa_link": "NASA-approved / NASA-HRP-funded study (U. Pennsylvania)",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197",
+   "verified": "abstract_and_methods_excerpts_read",
+   "used_for": "sleep <=6 h associated with slower psychomotor speed, more negative somatic states and higher stress; PVT-B lapse = RT >=355 ms; sleep-shift day definition"
+  },
+  "nasa_actigraphy_2023": {
+   "citation": "NASA Spaceflight Actigraphy Study slide deck (Barger/Flynn-Evans group), NTRS 20230003360, 2023 SLTBR Lausanne.",
+   "nasa_link": "NASA-authored (Fatigue Management / Sleep Lab)",
+   "url": "https://ntrs.nasa.gov/api/citations/20230003360/downloads/2023%20SLTBR%20Lausanne.pdf",
+   "verified": "slide_text_read (table context ambiguous; treat as PROVISIONAL)",
+   "used_for": "Example ISS actigraphy values: sleep efficiency 89 (3) %, WASO 29 (8) min, latency 9 (6) min, sleep 7.1 (0.5) h on weekdays"
+  },
+  "penn_rst": {
+   "citation": "Univ. of Pennsylvania Unit for Experimental Psychiatry, Reaction Self Test (ISS) project page; sponsor NASA/TRISH, PI M. Basner.",
+   "nasa_link": "NASA/TRISH-sponsored",
+   "url": "https://www.med.upenn.edu/uep/past_research.html",
+   "verified": "web_page_excerpts_read",
+   "used_for": "Reaction Self Test objective: sensitivity of PVT to fatigue from sleep loss and circadian disruption"
+  },
+  "basner_2011": {
+   "citation": "Basner M, Mollicone D, Dinges DF. Validity and sensitivity of a brief psychomotor vigilance test (PVT-B) to total and partial sleep deprivation. Acta Astronaut 69(11-12):949-959, 2011.",
+   "nasa_link": "Developed with NASA/NSBRI funding for ISS (NASA renamed it Reaction Self Test)",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3197786",
+   "verified": "abstract_read",
+   "used_for": "Lapse threshold 355 ms for 3-min PVT-B vs 500 ms for the standard PVT"
+  },
+  "dinges_2014": {
+   "citation": "Dinges DF, Basner M, Mollicone DJ, Jones CW, Ecker AJ, Bartels R, Mott C. Effects of time in mission: ISS astronauts' ratings of stress. NASA Human Research Program Investigators' Workshop, 2014 (NASA NNX08AY09G).",
+   "nasa_link": "NASA HRP workshop abstract",
+   "url": "https://typeset.io/pdf/effects-of-time-in-mission-iss-astronauts-ratings-of-stress-3x0ck6kyq9.pdf",
+   "verified": "abstract_read",
+   "used_for": "Stress ratings rose systematically in the 3rd and 4th quarters of 6-month ISS missions (N=24)"
+  },
+  "moore_2014": {
+   "citation": "Moore AD Jr, Downs ME, Lee SMC, Feiveson AH, Knudsen P, Evetts SN, Ploutz-Snyder L. Peak exercise oxygen uptake during and following long-duration spaceflight. J Appl Physiol 2014 (NASA abstract NTRS 20140003748).",
+   "nasa_link": "NASA-authored (JSC)",
+   "url": "https://ntrs.nasa.gov/api/citations/20140003748/downloads/20140003748.pdf",
+   "verified": "abstract_read",
+   "used_for": "VO2peak 17% below preflight on flight day 15 (95% CI -22 to -13%); 15% below on R+1; within 2% of preflight by R+30; peak HR unchanged"
+  },
+  "downs_2014": {
+   "citation": "Downs ME, Buxton R, Moore A, Ploutz-Snyder R, Ploutz-Snyder L. Contributions of astronauts' aerobic exercise intensity and time on change in VO2peak during spaceflight. NASA abstract NTRS 20140003747.",
+   "nasa_link": "NASA-authored (JSC / USRA)",
+   "url": "https://ntrs.nasa.gov/api/citations/20140003747/downloads/20140003747.pdf",
+   "verified": "abstract_read",
+   "used_for": "In-flight VO2peak change ranged from +5% to -30%; exercise time and intensity independently contribute"
+  },
+  "moore_2010": {
+   "citation": "Moore AD Jr, Evetts SN, Feiveson AH, et al. Maximum oxygen uptake during long-duration space flight: preliminary results. NASA abstract NTRS 20100042138 (n=4 with full data); and NTRS 20100003953 (project description).",
+   "nasa_link": "NASA-authored (JSC)",
+   "url": "https://ntrs.nasa.gov/api/citations/20100042138/downloads/20100042138.pdf",
+   "verified": "abstract_read",
+   "used_for": "Preliminary max HR 183+/-8 (preflight), 174+/-8 (early flight), 179+/-6 (late flight), n=4; exercise HR elevated early in flight then drifts back to preflight levels"
+  },
+  "scott_2023_npj": {
+   "citation": "npj Microgravity 2023, article s41526-023-00256-5 (NASA/CSA/ESA/JAXA ISS astronauts; association of mission length and age with change in VO2peak). Title/authors not re-verified here.",
+   "nasa_link": "ISS astronaut cohort (NASA-led data collection)",
+   "url": "https://link.springer.com/10.1038/s41526-023-00256-5",
+   "verified": "abstract_excerpt_read",
+   "used_for": "Longer missions associated with larger VO2peak loss; negative association with age (Somers' D = -0.23)"
+  },
+  "stahn_2017": {
+   "citation": "Stahn AC, Werner A, Opatz O, Maggioni MA, Steinach M, von Ahlefeld VW, Moore A, Crucian BE, Smith SM, Zwart SR, ... Gunga HC. Increased core body temperature in astronauts during long-duration space missions. Sci Rep 7:16180, 2017. doi:10.1038/s41598-017-15560-w",
+   "nasa_link": "Co-authored by NASA JSC (Moore, Crucian, Smith, Zwart); ISS crews",
+   "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5701078/",
+   "verified": "abstract_and_results_excerpts_read",
+   "used_for": "Resting core temp +1.01 C in flight vs baseline, developing over ~2.5 months, with raised IL-1ra; exercise CBT slope 0.10 C/min (ground) -> 0.15 C/min (flight); some exercise values >40 C (per secondary summary)"
+  },
+  "davis_1988": {
+   "citation": "Davis JR, Vanderploeg JM, Santy PA, Jennings RT, Stewart DF. Space motion sickness during 24 flights of the Space Shuttle. Aviat Space Environ Med 1988 (NASA NTRS 19890033299).",
+   "nasa_link": "NASA-authored (JSC flight surgeons)",
+   "url": "https://ntrs.nasa.gov/citations/19890033299",
+   "verified": "abstract_read",
+   "used_for": "First-flight incidence 67% (85 crew): 30% mild, 24% moderate, 13% severe; severity grading criteria"
+  },
+  "simanonok_1992": {
+   "citation": "NASA NTRS 19920013107 (preflight fluid-shift variables and space sickness prediction in 64 first-time Shuttle crew; reproduces Davis et al. 1988 scoring criteria). Title not re-verified here.",
+   "nasa_link": "NASA-authored",
+   "url": "https://ntrs.nasa.gov/api/citations/19920013107/downloads/19920013107.pdf",
+   "verified": "excerpts_read",
+   "used_for": "Space sickness begins ~1 h after orbital insertion, peaks within 24-48 h, usually resolves in 30-48 h, can persist to 72 h"
+  },
+  "nasa_hrw_sms": {
+   "citation": "NASA Human Research Wiki / Human Research Roadmap: Space Motion Sickness (Space Adaptation).",
+   "nasa_link": "NASA-authored (HRP)",
+   "url": "https://webcf.waybackmachine.org/web/20211027133343/https://humanresearchroadmap.nasa.gov/Evidence/medicalConditions/Space_Motion_Sickness_(Space_Adaptation).pdf",
+   "verified": "excerpts_read",
+   "used_for": "60-80% of space travelers experience SMS in first 2-3 days; untreated SMS can cause dehydration and task difficulty"
+  },
+  "sms_class_life_2014": {
+   "citation": "Table 1, 'NASA classification of space motion sickness', Life 2014;4(3):281-294 (reproduces NASA classification).",
+   "nasa_link": "Secondary source reproducing NASA classification",
+   "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4206847/table/life-04-00281-t001",
+   "verified": "table_read",
+   "used_for": "Mild: resolves 36-48 h, no operational impact; Moderate: persistent, minimal operational impact, resolves by 72 h; Severe: significant performance decrement, may persist >72 h"
+  },
+  "sms_chapter": {
+   "citation": "Book chapter on space motion sickness (Springer, doi:10.1007/978-1-4419-9905-4_3) citing Davis et al. 1988 and Homick & Miller 1975.",
+   "nasa_link": "Secondary source citing NASA data",
+   "url": "https://doi.org/10.1007/978-1-4419-9905-4_3",
+   "verified": "excerpts_read",
+   "used_for": "First-flight susceptibility predicted second-flight susceptibility in 77% of cases; no symptoms reported on the 1/6 g lunar surface"
+  },
+  "conkin_2017": {
+   "citation": "Conkin J, Wessel JH III, Norcross JR, Bekdash OS, Abercromby AFJ, Koslovsky MD, Gernhardt ML. Hemoglobin oxygen saturation with mild hypoxia and microgravity. Aerosp Med Hum Perform 88(6):527-534, 2017.",
+   "nasa_link": "NASA JSC authors; 8 Shuttle astronauts",
+   "url": "https://www.ingentaconnect.com/contentone/asma/amhp/2017/00000088/00000006/art00004",
+   "verified": "abstract_read",
+   "used_for": "In-flight SpO2 about 97% at an inspired O2 of 127 mmHg, not different from preflight or R+0/R+2"
+  }
+ },
+ "groups": {
+  "crew": {
+   "label": "Crew physiology (C01-C04 style, 180-day mission)",
+   "indicators": {
+    "sleep_hours": {
+     "label": "Sleep duration",
+     "unit": "h",
+     "type": "number",
+     "sanity_range": [
+      0,
+      16
+     ],
+     "aliases": [
+      "sleep_h",
+      "sleep_duration_h",
+      "sleep"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 0.5,
+     "cited_rules": [
+      {
+       "id": "sleep_le_6",
+       "test": {
+        "op": "le",
+        "value": 6.0
+       },
+       "status": "watch",
+       "message": "6 h or less is the range linked in 24 ISS astronauts to slower psychomotor speed, more negative somatic states and higher stress. NASA schedules 8.5 h; ISS crew averaged 6.09 h.",
+       "sources": [
+        "jones_2022_sleep",
+        "barger_2014"
+       ],
+       "action": "Protect the next sleep period (consistent schedule, avoid late caffeine/exercise, dim lights); avoid relying on hypnotics (Barger flagged routine use as a concern)."
+      },
+      {
+       "id": "sleep_6_to_7",
+       "test": {
+        "op": "between",
+        "value": [
+         6.0,
+         7.0
+        ]
+       },
+       "status": "ok",
+       "message": "Above 6 h but under 7 h; only 24% of ISS sleep episodes reached 7 h, so this is typical for ISS crew but below the NASA 8.5 h schedule.",
+       "sources": [
+        "barger_2014"
+       ]
+      },
+      {
+       "id": "sleep_ge_7",
+       "test": {
+        "op": "ge",
+        "value": 7.0
+       },
+       "status": "ok",
+       "message": "7 h or more, which only 24% of ISS sleep episodes reached.",
+       "sources": [
+        "barger_2014"
+       ]
+      }
+     ],
+     "window_rules": [
+      {
+       "id": "sleep_7day_mean_le_6",
+       "days": 7,
+       "min_days": 5,
+       "stat": "mean",
+       "op": "le",
+       "value": 6.0,
+       "status": "act",
+       "message": "Your 7-day average sleep is 6 h or less, the level associated with measurable psychomotor slowing and higher stress in ISS astronauts (sleep debt is accumulating).",
+       "sources": [
+        "jones_2022_sleep"
+       ],
+       "action": "Treat this as accumulated sleep debt: schedule recovery sleep and tell the crew surgeon/clinician if performance or mood is affected."
+      }
+     ],
+     "phase_notes": {}
+    },
+    "sleep_efficiency_pct": {
+     "label": "Sleep efficiency",
+     "unit": "%",
+     "type": "number",
+     "sanity_range": [
+      0,
+      100
+     ],
+     "aliases": [
+      "sleep_eff",
+      "sleep_efficiency"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 2.0,
+     "reference": {
+      "inflight|any": {
+       "mean": 89,
+       "sem": null,
+       "n": null,
+       "label": "ISS actigraphy example (PROVISIONAL)",
+       "sources": [
+        "nasa_actigraphy_2023"
+       ],
+       "sd": 3.0,
+       "bad": "low"
+      }
+     },
+     "phase_notes": {
+      "inflight": "Reference is a single NASA slide table of unclear sample size; treat z-scores as indicative only."
+     }
+    },
+    "waso_min": {
+     "label": "Wake after sleep onset",
+     "unit": "min",
+     "type": "number",
+     "sanity_range": [
+      0,
+      600
+     ],
+     "aliases": [
+      "waso",
+      "time_awake_min"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 5.0,
+     "reference": {
+      "inflight|any": {
+       "mean": 29,
+       "sem": null,
+       "n": null,
+       "label": "ISS actigraphy example (PROVISIONAL)",
+       "sources": [
+        "nasa_actigraphy_2023"
+       ],
+       "sd": 8.0,
+       "bad": "high"
+      }
+     }
+    },
+    "circadian_misaligned": {
+     "label": "Circadian misalignment flag",
+     "unit": "flag",
+     "type": "bool",
+     "aliases": [
+      "circadian_flag",
+      "sleep_shift",
+      "slam_shift"
+     ],
+     "cited_rules": [
+      {
+       "id": "circ_true",
+       "test": {
+        "op": "eq",
+        "value": true
+       },
+       "status": "watch",
+       "message": "Circadian disruption (e.g. shifted sleep periods) is one of the fatigue drivers the NASA/TRISH Reaction Self Test was built to detect; the standard ISS sleep window is about 21:30-06:00.",
+       "sources": [
+        "penn_rst",
+        "jones_2022_sleep"
+       ],
+       "action": "Re-anchor sleep timing gradually and use light timing; expect slower reaction time for a few days."
+      }
+     ],
+     "window_rules": [
+      {
+       "id": "circ_3_of_5",
+       "days": 5,
+       "min_days": 3,
+       "stat": "count_true",
+       "op": "ge",
+       "value": 3,
+       "status": "act",
+       "message": "Misaligned on 3 or more of the last 5 days: a persistent shift, not a one-off.",
+       "sources": [
+        "penn_rst"
+       ],
+       "action": "Ask for a schedule review with the crew surgeon/planners."
+      }
+     ]
+    },
+    "resting_hr_bpm": {
+     "label": "Resting heart rate",
+     "unit": "bpm",
+     "type": "number",
+     "sanity_range": [
+      25,
+      220
+     ],
+     "aliases": [
+      "hr_rest",
+      "resting_hr",
+      "hr"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 3.0,
+     "reference": {
+      "preflight|supine": {
+       "mean": 57,
+       "sem": 1.8,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "preflight|standing": {
+       "mean": 75,
+       "sem": 2.6,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|supine": {
+       "mean": 70,
+       "sem": 2.2,
+       "n": 32,
+       "label": "Landing day (L+0), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|standing": {
+       "mean": 101,
+       "sem": 3.6,
+       "n": 32,
+       "label": "Landing day (L+0), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|supine": {
+       "mean": 57,
+       "sem": 1.8,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|standing": {
+       "mean": 78,
+       "sem": 2.2,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      }
+     },
+     "context_groups": {
+      "landing_day|supine": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 72,
+        "sem": 5,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 62,
+        "sem": 2,
+        "n": 21
+       }
+      ],
+      "landing_day|standing": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 114,
+        "sem": 8,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 91,
+        "sem": 4,
+        "n": 21
+       }
+      ]
+     },
+     "context_action": "Sit or lie down, hydrate, and get a clinician/flight surgeon to review if you feel light-headed on standing. (General advice; EDOMP notes orthostatic intolerance usually resolves in 1-2 days.)",
+     "phase_notes": {
+      "inflight": "No numeric in-flight norm was extracted. NASA found heart rate and diastolic pressure were lower in flight than preflight (Fritsch-Yelle 1996, 12 Shuttle astronauts), so your own preflight / in-flight baseline is the better yardstick; a rise above it is more notable than a fall.",
+      "postflight": "NASA measured L+7 to L+10 only; for days 1-6 there is no numeric reference. EDOMP found cardiovascular changes resolved within 7 days of landing."
+     },
+     "extra_sources": [
+      "fritsch_yelle_1996",
+      "edomp_cv"
+     ]
+    },
+    "peak_exercise_hr_bpm": {
+     "label": "Peak exercise heart rate",
+     "unit": "bpm",
+     "type": "number",
+     "sanity_range": [
+      60,
+      230
+     ],
+     "aliases": [
+      "peak_hr",
+      "hr_peak",
+      "max_hr"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 4.0,
+     "reference": {
+      "preflight|any": {
+       "mean": 183,
+       "sem": null,
+       "n": 4,
+       "label": "Preliminary: max HR before flight, n=4",
+       "sources": [
+        "moore_2010"
+       ],
+       "sd": 8.0,
+       "info_only": true
+      }
+     },
+     "phase_notes": {
+      "inflight": "NASA found peak HR was not different from preflight at any time in flight or after (Moore 2014), while submaximal exercise HR is elevated early in flight and drifts back. A peak HR far from your own usual peak is therefore unexpected.",
+      "postflight": "Peak HR was unchanged postflight; exercise HR elevation resolved by about 30 days after landing."
+     }
+    },
+    "systolic_mmHg": {
+     "label": "Systolic blood pressure",
+     "unit": "mmHg",
+     "type": "number",
+     "sanity_range": [
+      50,
+      260
+     ],
+     "aliases": [
+      "sbp",
+      "sys",
+      "systolic"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 4.0,
+     "reference": {
+      "preflight|supine": {
+       "mean": 105,
+       "sem": 2.1,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "preflight|standing": {
+       "mean": 110,
+       "sem": 1.7,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|supine": {
+       "mean": 109,
+       "sem": 2.0,
+       "n": 32,
+       "label": "Landing day (L+0), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|standing": {
+       "mean": 111,
+       "sem": 2.2,
+       "n": 32,
+       "label": "Landing day (L+0), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|supine": {
+       "mean": 106,
+       "sem": 2.2,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|standing": {
+       "mean": 112,
+       "sem": 2.0,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      }
+     },
+     "context_groups": {
+      "landing_day|supine": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 110,
+        "sem": 4,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 120,
+        "sem": 2,
+        "n": 21
+       }
+      ],
+      "landing_day|standing": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 80,
+        "sem": 3,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 109,
+        "sem": 3,
+        "n": 21
+       }
+      ]
+     },
+     "context_action": "Sit or lie down, hydrate, and get a clinician/flight surgeon to review if you feel light-headed on standing. (General advice; EDOMP notes orthostatic intolerance usually resolves in 1-2 days.)",
+     "phase_notes": {
+      "inflight": "No numeric in-flight norm was extracted. NASA found heart rate and diastolic pressure were lower in flight than preflight (Fritsch-Yelle 1996, 12 Shuttle astronauts), so your own preflight / in-flight baseline is the better yardstick; a rise above it is more notable than a fall.",
+      "postflight": "NASA measured L+7 to L+10 only; for days 1-6 there is no numeric reference. EDOMP found cardiovascular changes resolved within 7 days of landing."
+     },
+     "extra_sources": [
+      "fritsch_yelle_1996",
+      "edomp_cv"
+     ]
+    },
+    "diastolic_mmHg": {
+     "label": "Diastolic blood pressure",
+     "unit": "mmHg",
+     "type": "number",
+     "sanity_range": [
+      30,
+      160
+     ],
+     "aliases": [
+      "dbp",
+      "dia",
+      "diastolic"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 3.0,
+     "reference": {
+      "preflight|supine": {
+       "mean": 64,
+       "sem": 2.1,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "preflight|standing": {
+       "mean": 79,
+       "sem": 1.7,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|supine": {
+       "mean": 68,
+       "sem": 2.6,
+       "n": 32,
+       "label": "Landing day (L+0), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|standing": {
+       "mean": 81,
+       "sem": 1.6,
+       "n": 32,
+       "label": "Landing day (L+0), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|supine": {
+       "mean": 64,
+       "sem": 2.7,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|standing": {
+       "mean": 80,
+       "sem": 1.2,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      }
+     },
+     "context_groups": {
+      "landing_day|supine": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 74,
+        "sem": 4,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 76,
+        "sem": 2,
+        "n": 21
+       }
+      ],
+      "landing_day|standing": [
+       {
+        "label": "presyncopal on landing day (n=8)",
+        "mean": 61,
+        "sem": 4,
+        "n": 8
+       },
+       {
+        "label": "non-presyncopal (n=21)",
+        "mean": 81,
+        "sem": 2,
+        "n": 21
+       }
+      ]
+     },
+     "context_action": "Sit or lie down, hydrate, and get a clinician/flight surgeon to review if you feel light-headed on standing. (General advice; EDOMP notes orthostatic intolerance usually resolves in 1-2 days.)",
+     "phase_notes": {
+      "inflight": "No numeric in-flight norm was extracted. NASA found heart rate and diastolic pressure were lower in flight than preflight (Fritsch-Yelle 1996, 12 Shuttle astronauts), so your own preflight / in-flight baseline is the better yardstick; a rise above it is more notable than a fall.",
+      "postflight": "NASA measured L+7 to L+10 only; for days 1-6 there is no numeric reference. EDOMP found cardiovascular changes resolved within 7 days of landing."
+     },
+     "extra_sources": [
+      "fritsch_yelle_1996",
+      "edomp_cv"
+     ]
+    },
+    "map_mmHg": {
+     "label": "Mean arterial pressure",
+     "unit": "mmHg",
+     "type": "number",
+     "sanity_range": [
+      40,
+      200
+     ],
+     "aliases": [
+      "map",
+      "mean_arterial_pressure"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 3.0,
+     "reference": {
+      "preflight|supine": {
+       "mean": 77,
+       "sem": 1.9,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "preflight|standing": {
+       "mean": 89,
+       "sem": 1.5,
+       "n": 32,
+       "label": "Preflight (L-10), 32 Shuttle astronauts, standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|supine": {
+       "mean": 82,
+       "sem": 2.2,
+       "n": 32,
+       "label": "Landing day (L+0), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "landing_day|standing": {
+       "mean": 91,
+       "sem": 1.5,
+       "n": 32,
+       "label": "Landing day (L+0), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|supine": {
+       "mean": 78,
+       "sem": 2.4,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), supine",
+       "sources": [
+        "edomp_cv"
+       ]
+      },
+      "postflight_d7_10|standing": {
+       "mean": 91,
+       "sem": 1.3,
+       "n": 32,
+       "label": "Postflight days 7-10 (L+7-10), standing",
+       "sources": [
+        "edomp_cv"
+       ]
+      }
+     },
+     "phase_notes": {
+      "inflight": "No numeric in-flight norm was extracted. NASA found heart rate and diastolic pressure were lower in flight than preflight (Fritsch-Yelle 1996, 12 Shuttle astronauts), so your own preflight / in-flight baseline is the better yardstick; a rise above it is more notable than a fall.",
+      "postflight": "NASA measured L+7 to L+10 only; for days 1-6 there is no numeric reference. EDOMP found cardiovascular changes resolved within 7 days of landing."
+     },
+     "extra_sources": [
+      "fritsch_yelle_1996",
+      "edomp_cv"
+     ]
+    },
+    "stroke_volume_ml": {
+     "label": "Stroke volume",
+     "unit": "mL",
+     "type": "number",
+     "sanity_range": [
+      10,
+      200
+     ],
+     "aliases": [
+      "sv",
+      "stroke_volume"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 5.0,
+     "reference_info": "EDOMP Table 1-6 (mean+/-SE): supine preflight 83+/-4 mL (non-presyncopal, n=21) and 86+/-5 mL (presyncopal, n=8); landing day supine 77+/-5 and 78+/-4 mL; landing-day standing 32+/-9 and 28+/-2 mL. Table 1-2: stroke-volume INDEX fell 17% supine on landing day (38.5 -> 32.1 mL/m2). These are group means, so no automatic z-score is made.",
+     "reference_sources": [
+      "edomp_cv"
+     ],
+     "phase_notes": {
+      "landing_day": "Expect roughly a 17% fall in supine stroke volume index vs your own preflight value (EDOMP, 32 astronauts); heart rate rises to compensate.",
+      "inflight": "NASA did not provide a numeric in-flight stroke volume norm in the sources used; compare with your own baseline."
+     }
+    },
+    "vo2_pct_baseline": {
+     "label": "VO2 as % of preflight baseline",
+     "unit": "%",
+     "type": "number",
+     "sanity_range": [
+      20,
+      150
+     ],
+     "aliases": [
+      "vo2_pct",
+      "vo2peak_pct",
+      "vo2"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 3.0,
+     "cited_rules": [
+      {
+       "id": "vo2_inflight_ok",
+       "test": {
+        "op": "ge",
+        "value": 78.0
+       },
+       "status": "ok",
+       "message": "At or above the lower 95% bound of the mean early-flight VO2peak (about 83% of preflight, 95% CI 78-87%) measured in ISS astronauts.",
+       "sources": [
+        "moore_2014",
+        "downs_2014"
+       ],
+       "when": {
+        "phase": [
+         "inflight"
+        ]
+       }
+      },
+      {
+       "id": "vo2_inflight_watch",
+       "test": {
+        "op": "between",
+        "value": [
+         70.0,
+         78.0
+        ]
+       },
+       "status": "watch",
+       "message": "Below the mean early-flight range but within the +5% to -30% individual spread NASA reported.",
+       "sources": [
+        "moore_2014",
+        "downs_2014"
+       ],
+       "when": {
+        "phase": [
+         "inflight"
+        ]
+       },
+       "action": "Check in-flight exercise time and intensity; both independently predicted VO2peak change (Downs 2014)."
+      },
+      {
+       "id": "vo2_inflight_act",
+       "test": {
+        "op": "lt",
+        "value": 70.0
+       },
+       "status": "act",
+       "message": "More than the 30% maximum decline in the NASA ISS series.",
+       "sources": [
+        "downs_2014"
+       ],
+       "when": {
+        "phase": [
+         "inflight"
+        ]
+       },
+       "action": "Review exercise countermeasure compliance and equipment with the exercise physiologist / flight surgeon."
+      },
+      {
+       "id": "vo2_post_late",
+       "test": {
+        "op": "lt",
+        "value": 94.0
+       },
+       "status": "watch",
+       "message": "Thirty or more days after landing VO2peak was within 2% of preflight (95% CI -6% to +3%); yours is below that.",
+       "sources": [
+        "moore_2014"
+       ],
+       "when": {
+        "phase": [
+         "postflight"
+        ],
+        "days_since_landing_min": 30
+       }
+      }
+     ],
+     "phase_notes": {
+      "inflight": "VO2peak fell ~17% early in flight, then rose slowly but never fully returned to preflight (Moore 2014). Longer missions and older age were associated with larger loss (npj Microgravity 2023).",
+      "postflight": "Expected about 15% below preflight on R+1 and back to within ~2% by R+30."
+     },
+     "extra_sources": [
+      "scott_2023_npj"
+     ]
+    },
+    "aerobic_min": {
+     "label": "Aerobic exercise minutes",
+     "unit": "min",
+     "type": "number",
+     "sanity_range": [
+      0,
+      600
+     ],
+     "aliases": [
+      "aerobic_minutes",
+      "exercise_min"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 10.0,
+     "phase_notes": {
+      "inflight": "NASA found exercise time and intensity independently affect VO2peak change, with minimum values needed to maintain it (Downs 2014), but no numeric minutes target was extracted, so only your own 7-day baseline is checked."
+     }
+    },
+    "resp_rate_bpm": {
+     "label": "Respiratory rate",
+     "unit": "breaths/min",
+     "type": "number",
+     "sanity_range": [
+      4,
+      60
+     ],
+     "aliases": [
+      "rr",
+      "resp_rate",
+      "respiratory_rate"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 1.5,
+     "no_nasa_reference": "No NASA-cited numeric respiratory-rate norm was found in the sources reviewed; only the personal 7-day baseline is applied."
+    },
+    "spo2_pct": {
+     "label": "Blood oxygen saturation (SpO2)",
+     "unit": "%",
+     "type": "number",
+     "sanity_range": [
+      50,
+      100
+     ],
+     "aliases": [
+      "spo2",
+      "o2_sat"
+     ],
+     "baseline_bad": "low",
+     "baseline_min_sd": 1.0,
+     "reference": {
+      "inflight|any": {
+       "mean": 97,
+       "sem": null,
+       "n": null,
+       "label": "In-flight SpO2 at inspired O2 127 mmHg (8 Shuttle astronauts)",
+       "sources": [
+        "conkin_2017"
+       ],
+       "info_only": true
+      }
+     },
+     "uncited_defaults": [
+      {
+       "id": "spo2_lt_90",
+       "op": "lt",
+       "value": 90,
+       "status": "act",
+       "message": "Below 90% is generally treated as significant hypoxaemia.",
+       "basis": "generic clinical convention, NOT NASA-cited"
+      },
+      {
+       "id": "spo2_lt_95",
+       "op": "between",
+       "value": [
+        90,
+        95
+       ],
+       "status": "watch",
+       "message": "Below 95% is generally considered low.",
+       "basis": "generic clinical convention, NOT NASA-cited"
+      }
+     ]
+    },
+    "fatigue_0_100": {
+     "label": "Fatigue rating",
+     "unit": "0-100",
+     "type": "number",
+     "sanity_range": [
+      0,
+      100
+     ],
+     "aliases": [
+      "fatigue",
+      "fatigue_score"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 5.0,
+     "no_nasa_reference": "No NASA numeric cut-off exists for this 0-100 scale; only the personal 7-day baseline is applied.",
+     "late_mission_note": {
+      "mission_day_min": 91,
+      "message": "Self-rated stress rose in the 3rd and 4th quarters of 6-month ISS missions (Dinges 2014), so a late-mission rise in fatigue is common but still worth acting on.",
+      "sources": [
+       "dinges_2014"
+      ]
+     }
+    },
+    "reaction_time_ms": {
+     "label": "Psychomotor reaction time",
+     "unit": "ms",
+     "type": "number",
+     "sanity_range": [
+      100,
+      2000
+     ],
+     "aliases": [
+      "rt_ms",
+      "reaction_time",
+      "pvt_rt"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 15.0,
+     "no_nasa_reference": "No absolute NASA norm; sleep of 6 h or less was associated with slower psychomotor speed (Jones 2022), so this is checked against your own baseline and cross-checked with sleep."
+    },
+    "pvt_lapses": {
+     "label": "PVT lapses",
+     "unit": "count",
+     "type": "number",
+     "sanity_range": [
+      0,
+      200
+     ],
+     "aliases": [
+      "lapses",
+      "pvt"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 1.0,
+     "baseline_window_days": 14,
+     "baseline_min_days": 3,
+     "no_nasa_reference": "Lapse = reaction >=355 ms on the 3-min PVT-B (NASA's ISS Reaction Self Test) or >=500 ms on the standard PVT (Basner 2011). No NASA absolute cut-off for lapse counts was found, so your own baseline is used.",
+     "extra_sources": [
+      "basner_2011"
+     ]
+    },
+    "poms_score": {
+     "label": "POMS mood score (weekly)",
+     "unit": "score",
+     "type": "number",
+     "sanity_range": [
+      -100,
+      300
+     ],
+     "aliases": [
+      "poms",
+      "poms_tmd"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 5.0,
+     "baseline_window_days": 35,
+     "baseline_min_days": 3,
+     "no_nasa_reference": "No NASA numeric POMS norm was found; checked only against your own previous weekly scores (higher = more mood disturbance is assumed; reverse if your scoring differs).",
+     "late_mission_note": {
+      "mission_day_min": 91,
+      "message": "Stress ratings rose in the second half of 6-month ISS missions (Dinges 2014).",
+      "sources": [
+       "dinges_2014"
+      ]
+     }
+    },
+    "co2_mmHg": {
+     "label": "Cabin CO2 (daily)",
+     "unit": "mmHg",
+     "type": "number",
+     "sanity_range": [
+      0,
+      30
+     ],
+     "aliases": [
+      "co2",
+      "cabin_co2",
+      "ppco2"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.3,
+     "cited_rules": [
+      {
+       "id": "co2_ge_3",
+       "test": {
+        "op": "ge",
+        "value": 3.0
+       },
+       "status": "act",
+       "message": "At or above the 3 mmHg limit NASA-STD-3001 Vol 2 Rev D sets for the 1-hour average ppCO2 (a daily mean above it means some hours were higher). NASA lists chronic cough, poor sleep, blurred vision and frontal headaches around 3.5 mmHg.",
+       "sources": [
+        "co2_ochmo",
+        "co2_law_2016"
+       ],
+       "action": "Improve ventilation / check CO2 removal, reduce exertion, report headache or other symptoms to the flight surgeon or a clinician."
+      },
+      {
+       "id": "co2_2_3_to_3",
+       "test": {
+        "op": "between",
+        "value": [
+         2.3,
+         3.0
+        ]
+       },
+       "status": "watch",
+       "message": "Below the 3 mmHg limit but in the range where ISS crew started reporting CO2-related symptoms (from 2.3 mmHg).",
+       "sources": [
+        "co2_law_2016",
+        "co2_ochmo"
+       ],
+       "action": "Watch for headache, poor sleep or 'mental viscosity'; check ventilation around your sleep and work area."
+      },
+      {
+       "id": "co2_lt_2_3",
+       "test": {
+        "op": "lt",
+        "value": 2.3
+       },
+       "status": "ok",
+       "message": "Below the level at which ISS crew began reporting CO2 symptoms.",
+       "sources": [
+        "co2_law_2016"
+       ]
+      }
+     ],
+     "window_rules": [
+      {
+       "id": "co2_7day_mean",
+       "days": 7,
+       "min_days": 5,
+       "stat": "mean",
+       "op": "ge",
+       "value": 2.5,
+       "status": "watch",
+       "message": "7-day mean CO2 is at or above 2.5 mmHg; NASA reports the 7-day average must stay below 2.5 mmHg to keep headache incidence under 1%.",
+       "sources": [
+        "co2_ochmo"
+       ],
+       "action": "Look for a sustained ventilation problem rather than a single bad day."
+      }
+     ]
+    }
+   },
+   "compound_rules": [
+    {
+     "id": "short_sleep_plus_performance",
+     "requires": [
+      {
+       "indicator": "sleep_hours",
+       "status_in": [
+        "watch",
+        "act"
+       ]
+      },
+      {
+       "any_of": [
+        {
+         "indicator": "reaction_time_ms",
+         "baseline_bad": true
+        },
+        {
+         "indicator": "pvt_lapses",
+         "baseline_bad": true
+        },
+        {
+         "indicator": "fatigue_0_100",
+         "baseline_bad": true
+        }
+       ]
+      }
+     ],
+     "status": "act",
+     "message": "Short sleep and a worse-than-baseline reaction/fatigue measure together: the pattern NASA-funded ISS work links to sleep restriction (sleep of 6 h or less with slower psychomotor speed and higher stress).",
+     "sources": [
+      "jones_2022_sleep"
+     ],
+     "action": "Do not schedule safety-critical or high-workload tasks right now; prioritise recovery sleep and tell the crew surgeon/clinician."
+    }
+   ],
+   "phases": [
+    "preflight",
+    "inflight",
+    "landing_day",
+    "postflight"
+   ],
+   "postures": [
+    "supine",
+    "standing"
+   ]
+  },
+  "motion_sickness": {
+   "label": "Space motion sickness (8-12 day missions)",
+   "indicators": {
+    "severity_0_3": {
+     "label": "Motion sickness severity (0-3)",
+     "unit": "0=none,1=mild,2=moderate,3=severe",
+     "type": "number",
+     "sanity_range": [
+      0,
+      3
+     ],
+     "aliases": [
+      "severity",
+      "sms_severity",
+      "ms_severity"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.5,
+     "cited_rules": [
+      {
+       "id": "sms_0",
+       "test": {
+        "op": "eq",
+        "value": 0
+       },
+       "status": "ok",
+       "message": "No signs or symptoms (NASA 'none' category).",
+       "sources": [
+        "simanonok_1992",
+        "sms_class_life_2014"
+       ]
+      },
+      {
+       "id": "sms_1_early",
+       "test": {
+        "op": "eq",
+        "value": 1
+       },
+       "status": "ok",
+       "message": "Mild: transient symptoms, no operational impact, usually resolve in 36-48 h (NASA classification).",
+       "sources": [
+        "sms_class_life_2014",
+        "simanonok_1992"
+       ],
+       "action": "Move slowly, limit abrupt head movements, hydrate."
+      },
+      {
+       "id": "sms_1_late",
+       "test": {
+        "op": "eq",
+        "value": 1
+       },
+       "status": "watch",
+       "message": "Mild symptoms are still present after the first ~72 h, longer than the 30-48 h in which space sickness usually resolves.",
+       "sources": [
+        "simanonok_1992",
+        "sms_class_life_2014"
+       ],
+       "when": {
+        "mission_day_min": 4
+       },
+       "action": "Limit abrupt head movements, hydrate and rest; if symptoms are moderate or beyond ~72 h, contact the flight surgeon / a clinician (NASA treated SMS with antiemetics such as promethazine in flight)."
+      },
+      {
+       "id": "sms_2_early",
+       "test": {
+        "op": "eq",
+        "value": 2
+       },
+       "status": "watch",
+       "message": "Moderate: several persistent symptoms with minimal operational impact; NASA expects resolution within ~72 h.",
+       "sources": [
+        "sms_class_life_2014"
+       ],
+       "action": "Limit abrupt head movements, hydrate and rest; if symptoms are moderate or beyond ~72 h, contact the flight surgeon / a clinician (NASA treated SMS with antiemetics such as promethazine in flight)."
+      },
+      {
+       "id": "sms_2_late",
+       "test": {
+        "op": "eq",
+        "value": 2
+       },
+       "status": "act",
+       "message": "Moderate symptoms beyond ~72 h are outside the normal NASA time course.",
+       "sources": [
+        "sms_class_life_2014",
+        "simanonok_1992"
+       ],
+       "when": {
+        "mission_day_min": 4
+       },
+       "action": "Limit abrupt head movements, hydrate and rest; if symptoms are moderate or beyond ~72 h, contact the flight surgeon / a clinician (NASA treated SMS with antiemetics such as promethazine in flight)."
+      },
+      {
+       "id": "sms_3",
+       "test": {
+        "op": "eq",
+        "value": 3
+       },
+       "status": "act",
+       "message": "Severe: persistent symptoms with significant performance decrement; may persist beyond 72 h (NASA classification). Untreated SMS can cause dehydration and difficulty completing tasks.",
+       "sources": [
+        "sms_class_life_2014",
+        "nasa_hrw_sms"
+       ],
+       "action": "Limit abrupt head movements, hydrate and rest; if symptoms are moderate or beyond ~72 h, contact the flight surgeon / a clinician (NASA treated SMS with antiemetics such as promethazine in flight)."
+      }
+     ],
+     "phase_notes": {
+      "all": "Typical NASA time course: onset ~1 h after orbital insertion, peak within 24-48 h, usually resolved by 30-48 h, up to 72 h."
+     }
+    },
+    "sick": {
+     "label": "Sick (yes/no)",
+     "unit": "flag",
+     "type": "bool",
+     "aliases": [
+      "is_sick",
+      "ms_sick"
+     ],
+     "cited_rules": [
+      {
+       "id": "sick_true",
+       "test": {
+        "op": "eq",
+        "value": true
+       },
+       "status": "watch",
+       "message": "You flagged sickness. NASA graded space motion sickness by severity and duration, so also enter severity_0_3 and mission_day to judge whether it is within the expected 30-72 h course.",
+       "sources": [
+        "simanonok_1992"
+       ],
+       "action": "Limit abrupt head movements, hydrate and rest; if symptoms are moderate or beyond ~72 h, contact the flight surgeon / a clinician (NASA treated SMS with antiemetics such as promethazine in flight)."
+      }
+     ]
+    },
+    "hr_bpm": {
+     "label": "Heart rate",
+     "unit": "bpm",
+     "type": "number",
+     "sanity_range": [
+      25,
+      220
+     ],
+     "aliases": [
+      "hr",
+      "heart_rate"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 3.0,
+     "no_nasa_reference": "No NASA numeric norm tied to motion-sickness heart rate was found; personal 7-day baseline only."
+    },
+    "resp_rate_bpm": {
+     "label": "Breathing rate",
+     "unit": "breaths/min",
+     "type": "number",
+     "sanity_range": [
+      4,
+      60
+     ],
+     "aliases": [
+      "rr",
+      "resp_rate",
+      "breathing_rate"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 1.5,
+     "no_nasa_reference": "No NASA numeric norm found; personal 7-day baseline only."
+    },
+    "skin_temp_c": {
+     "label": "Skin temperature",
+     "unit": "C",
+     "type": "number",
+     "sanity_range": [
+      20,
+      42
+     ],
+     "aliases": [
+      "skin_temp",
+      "skin_temperature"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 0.3,
+     "no_nasa_reference": "No NASA numeric norm found; personal 7-day baseline only."
+    },
+    "self_rating_0_10": {
+     "label": "Self-rating (0-10)",
+     "unit": "0-10",
+     "type": "number",
+     "sanity_range": [
+      0,
+      10
+     ],
+     "aliases": [
+      "self_rating",
+      "rating"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.7,
+     "no_nasa_reference": "No NASA cut-off for this scale; personal baseline only."
+    }
+   },
+   "context_notes": [
+    {
+     "id": "first_flight",
+     "when": {
+      "first_flight": true
+     },
+     "message": "First flight: 67% of 85 first-time Shuttle crew had some space motion sickness (30% mild, 24% moderate, 13% severe); NASA states 60-80% of space travellers are affected in the first 2-3 days.",
+     "sources": [
+      "davis_1988",
+      "nasa_hrw_sms"
+     ]
+    },
+    {
+     "id": "past_ms",
+     "when": {
+      "past_motion_sickness": true
+     },
+     "message": "Prior susceptibility is informative: in NASA Shuttle data, susceptibility on a first flight predicted susceptibility on the second in 77% of cases (secondary source).",
+     "sources": [
+      "sms_chapter"
+     ]
+    },
+    {
+     "id": "lunar",
+     "when": {
+      "lunar_landing": true
+     },
+     "message": "No motion sickness was reported on the 1/6 g lunar surface in Apollo accounts (secondary source); symptoms are tied to transitions between gravity levels.",
+     "sources": [
+      "sms_chapter"
+     ]
+    },
+    {
+     "id": "no_predictors",
+     "when": {
+      "always": true
+     },
+     "message": "No NASA-cited effect of sex or age on space motion sickness was found in the sources reviewed, so these are not used as predictors.",
+     "sources": []
+    }
+   ],
+   "phases": [
+    "inflight",
+    "landing_day",
+    "postflight",
+    "preflight"
+   ],
+   "person_fields": [
+    "sex",
+    "age",
+    "first_flight",
+    "past_motion_sickness",
+    "lunar_landing",
+    "mission_length_days",
+    "mission_phase"
+   ]
+  },
+  "body_temperature": {
+   "label": "Body temperature / heat strain",
+   "indicators": {
+    "core_temp_rest_c": {
+     "label": "Resting core temperature",
+     "unit": "C",
+     "type": "number",
+     "sanity_range": [
+      34,
+      42
+     ],
+     "aliases": [
+      "core_temp_rest",
+      "rest_core_temp",
+      "tcore_rest"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.15,
+     "delta_from_phase": {
+      "baseline_phase": "preflight",
+      "applies_to_phase": [
+       "inflight"
+      ],
+      "min_days": 3,
+      "expected_delta": 1.01,
+      "sources": [
+       "stahn_2017"
+      ],
+      "text": {
+       "none": "Resting core temperature in ISS crew rose about 1.01 C above their own baseline, gradually over ~2.5 months. Yours is {delta:+.2f} C vs your preflight mean: no elevation yet.",
+       "typical": "Resting core temperature is {delta:+.2f} C vs your preflight mean; ISS crew showed an average rise of about +1.01 C over ~2.5 months (Stahn 2017), so this is in the expected direction.",
+       "above": "Resting core temperature is {delta:+.2f} C vs your preflight mean, above the average +1.01 C rise in ISS crew. NASA-coauthored data give the mean only here, so judge it with your 7-day baseline and symptoms."
+      }
+     },
+     "uncited_defaults": [
+      {
+       "id": "fever_38",
+       "op": "ge",
+       "value": 38.0,
+       "status": "watch",
+       "message": "38.0 C or higher is the usual terrestrial fever threshold.",
+       "basis": "generic clinical convention, NOT NASA-cited"
+      }
+     ],
+     "phase_notes": {
+      "inflight": "Core temperature rises gradually in flight (+1.01 C at rest, associated with higher IL-1ra), so the preflight baseline matters more than the textbook 37 C."
+     }
+    },
+    "core_temp_exercise_peak_c": {
+     "label": "Exercise peak core temperature",
+     "unit": "C",
+     "type": "number",
+     "sanity_range": [
+      35,
+      43
+     ],
+     "aliases": [
+      "peak_core_temp",
+      "core_temp_peak",
+      "tcore_peak"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.2,
+     "cited_rules": [
+      {
+       "id": "tpeak_ge_40",
+       "test": {
+        "op": "ge",
+        "value": 40.0
+       },
+       "status": "watch",
+       "message": "Exercise core temperature exceeded 40 C in some ISS astronauts (Stahn 2017, per secondary summary); NASA has not published this as a limit, but it is high.",
+       "sources": [
+        "stahn_2017"
+       ],
+       "action": "Stop or lower exercise intensity, cool down, hydrate; report to the flight surgeon / a clinician if you feel unwell."
+      }
+     ]
+    },
+    "exercise_temp_rise_c_per_min": {
+     "label": "Exercise temperature rise rate",
+     "unit": "C/min",
+     "type": "number",
+     "sanity_range": [
+      0,
+      1
+     ],
+     "aliases": [
+      "temp_rise_rate",
+      "exercise_rise_rate"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.01,
+     "cited_rules": [
+      {
+       "id": "rise_inflight_gt_015",
+       "test": {
+        "op": "gt",
+        "value": 0.15
+       },
+       "status": "watch",
+       "message": "Faster than the mean in-flight rise of 0.15 C/min measured in ISS crew (ground mean 0.10 C/min).",
+       "sources": [
+        "stahn_2017"
+       ],
+       "when": {
+        "phase": [
+         "inflight"
+        ]
+       },
+       "action": "Reduce exercise intensity or improve cooling/ventilation."
+      },
+      {
+       "id": "rise_inflight_ok",
+       "test": {
+        "op": "le",
+        "value": 0.15
+       },
+       "status": "ok",
+       "message": "At or below the mean in-flight rise (0.15 C/min).",
+       "sources": [
+        "stahn_2017"
+       ],
+       "when": {
+        "phase": [
+         "inflight"
+        ]
+       }
+      },
+      {
+       "id": "rise_ground_gt_010",
+       "test": {
+        "op": "gt",
+        "value": 0.1
+       },
+       "status": "watch",
+       "message": "Faster than the ground mean rise of 0.10 C/min in the same ISS study.",
+       "sources": [
+        "stahn_2017"
+       ],
+       "when": {
+        "phase": [
+         "preflight",
+         "postflight"
+        ]
+       }
+      },
+      {
+       "id": "rise_ground_ok",
+       "test": {
+        "op": "le",
+        "value": 0.1
+       },
+       "status": "ok",
+       "message": "At or below the ground mean rise (0.10 C/min).",
+       "sources": [
+        "stahn_2017"
+       ],
+       "when": {
+        "phase": [
+         "preflight",
+         "postflight"
+        ]
+       }
+      }
+     ]
+    },
+    "exercise_load": {
+     "label": "Exercise load",
+     "unit": "as recorded",
+     "type": "number",
+     "sanity_range": [
+      0,
+      10000
+     ],
+     "aliases": [
+      "load",
+      "exercise_load_w"
+     ],
+     "baseline_bad": "none",
+     "baseline_min_sd": 1.0,
+     "no_nasa_reference": "Context variable only; used by the app to interpret exercise temperature, not scored."
+    },
+    "hr_rest_bpm": {
+     "label": "Resting heart rate",
+     "unit": "bpm",
+     "type": "number",
+     "sanity_range": [
+      25,
+      220
+     ],
+     "aliases": [
+      "hr",
+      "resting_hr"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 3.0,
+     "phase_notes": {
+      "inflight": "No numeric in-flight norm was extracted. NASA found heart rate and diastolic pressure were lower in flight than preflight (Fritsch-Yelle 1996, 12 Shuttle astronauts), so your own preflight / in-flight baseline is the better yardstick; a rise above it is more notable than a fall.",
+      "postflight": "NASA measured L+7 to L+10 only; for days 1-6 there is no numeric reference. EDOMP found cardiovascular changes resolved within 7 days of landing."
+     },
+     "extra_sources": [
+      "fritsch_yelle_1996",
+      "edomp_cv"
+     ],
+     "no_nasa_reference": "Use the 'crew' group for EDOMP posture-specific reference values; here only your 7-day baseline applies."
+    },
+    "symptom_score_0_10": {
+     "label": "Symptom score (0-10)",
+     "unit": "0-10",
+     "type": "number",
+     "sanity_range": [
+      0,
+      10
+     ],
+     "aliases": [
+      "symptoms",
+      "symptom_score"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.7,
+     "no_nasa_reference": "No NASA cut-off for this scale; personal baseline only."
+    },
+    "measure_hour": {
+     "label": "Hour of measurement",
+     "unit": "h (0-24)",
+     "type": "number",
+     "sanity_range": [
+      0,
+      24
+     ],
+     "aliases": [
+      "hour"
+     ],
+     "baseline_bad": "none",
+     "baseline_min_sd": 1.0,
+     "no_nasa_reference": "Context only: core temperature has a circadian rhythm, so compare readings taken at similar hours (Stahn 2017 notes slight circadian undulation around ~37 C)."
+    },
+    "il1ra_pg_ml": {
+     "label": "IL-1ra (inflammation marker)",
+     "unit": "pg/mL",
+     "type": "number",
+     "sanity_range": [
+      0,
+      100000
+     ],
+     "aliases": [
+      "il1ra",
+      "il_1ra"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 10.0,
+     "baseline_window_days": 60,
+     "baseline_min_days": 2,
+     "no_nasa_reference": "ISS crew with ~+1 C resting core temperature also had higher IL-1ra (Stahn 2017), but no numeric reference range was extracted; compared only with your own earlier readings (sparse data).",
+     "extra_sources": [
+      "stahn_2017"
+     ]
+    },
+    "alert_level": {
+     "label": "Alert level (0-2)",
+     "unit": "0-2",
+     "type": "number",
+     "sanity_range": [
+      0,
+      2
+     ],
+     "aliases": [
+      "alert"
+     ],
+     "label_passthrough": {
+      "1": "watch",
+      "2": "act"
+     },
+     "no_nasa_reference": "This is your dataset's own label, not a NASA rule; it is passed through (1 = watch, 2 = act)."
+    },
+    "fever": {
+     "label": "Fever day",
+     "unit": "flag",
+     "type": "bool",
+     "aliases": [
+      "fever_day"
+     ],
+     "label_passthrough": {
+      "true": "watch"
+     },
+     "no_nasa_reference": "Your own label; passed through as 'watch' with no NASA threshold."
+    },
+    "heat_stress_flag": {
+     "label": "Exercise heat-stress flag",
+     "unit": "flag",
+     "type": "bool",
+     "aliases": [
+      "heat_stress"
+     ],
+     "label_passthrough": {
+      "true": "watch"
+     },
+     "no_nasa_reference": "Your own label; passed through as 'watch'. NASA-coauthored data show exercise heat strain is higher in space (Stahn 2017)."
+    },
+    "cabin_temp_c": {
+     "label": "Cabin temperature",
+     "unit": "C",
+     "type": "number",
+     "sanity_range": [
+      5,
+      45
+     ],
+     "aliases": [
+      "cabin_temp"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 0.5,
+     "no_nasa_reference": "No NASA limit extracted. (An ISS 24-h blood-pressure study logged cabin temperature of 23-25 C.) Baseline only."
+    },
+    "cabin_humidity_pct": {
+     "label": "Cabin humidity",
+     "unit": "%",
+     "type": "number",
+     "sanity_range": [
+      0,
+      100
+     ],
+     "aliases": [
+      "cabin_humidity",
+      "humidity"
+     ],
+     "baseline_bad": "both",
+     "baseline_min_sd": 3.0,
+     "no_nasa_reference": "No NASA numeric limit extracted in this search; baseline only."
+    },
+    "cabin_co2_mmHg": {
+     "label": "Cabin CO2",
+     "unit": "mmHg",
+     "type": "number",
+     "sanity_range": [
+      0,
+      30
+     ],
+     "aliases": [
+      "cabin_co2",
+      "co2",
+      "co2_mmHg"
+     ],
+     "baseline_bad": "high",
+     "baseline_min_sd": 0.3,
+     "cited_rules": [
+      {
+       "id": "co2_ge_3",
+       "test": {
+        "op": "ge",
+        "value": 3.0
+       },
+       "status": "act",
+       "message": "At or above the 3 mmHg limit NASA-STD-3001 Vol 2 Rev D sets for the 1-hour average ppCO2 (a daily mean above it means some hours were higher). NASA lists chronic cough, poor sleep, blurred vision and frontal headaches around 3.5 mmHg.",
+       "sources": [
+        "co2_ochmo",
+        "co2_law_2016"
+       ],
+       "action": "Improve ventilation / check CO2 removal, reduce exertion, report headache or other symptoms to the flight surgeon or a clinician."
+      },
+      {
+       "id": "co2_2_3_to_3",
+       "test": {
+        "op": "between",
+        "value": [
+         2.3,
+         3.0
+        ]
+       },
+       "status": "watch",
+       "message": "Below the 3 mmHg limit but in the range where ISS crew started reporting CO2-related symptoms (from 2.3 mmHg).",
+       "sources": [
+        "co2_law_2016",
+        "co2_ochmo"
+       ],
+       "action": "Watch for headache, poor sleep or 'mental viscosity'; check ventilation around your sleep and work area."
+      },
+      {
+       "id": "co2_lt_2_3",
+       "test": {
+        "op": "lt",
+        "value": 2.3
+       },
+       "status": "ok",
+       "message": "Below the level at which ISS crew began reporting CO2 symptoms.",
+       "sources": [
+        "co2_law_2016"
+       ]
+      }
+     ],
+     "window_rules": [
+      {
+       "id": "co2_7day_mean",
+       "days": 7,
+       "min_days": 5,
+       "stat": "mean",
+       "op": "ge",
+       "value": 2.5,
+       "status": "watch",
+       "message": "7-day mean CO2 is at or above 2.5 mmHg; NASA reports the 7-day average must stay below 2.5 mmHg to keep headache incidence under 1%.",
+       "sources": [
+        "co2_ochmo"
+       ],
+       "action": "Look for a sustained ventilation problem rather than a single bad day."
+      }
+     ]
+    }
+   },
+   "phases": [
+    "preflight",
+    "inflight",
+    "postflight",
+    "landing_day"
+   ],
+   "person_fields": [
+    "sex",
+    "age",
+    "bmi"
+   ]
+  }
+ }
+}
