@@ -883,7 +883,13 @@ def load_csv(path, subject=None, reset=False):
             p = prof.setdefault(sid, {})
             for col, key in CSV_PROFILE.items():
                 if r.get(col) not in (None, ""):
-                    p[key] = float(r[col]) if key == "age" else r[col]
+                    if key == "age":
+                        try:
+                            p[key] = float(str(r[col]).replace(" ", ""))   # tolerate typos such as "4 5"
+                        except ValueError:
+                            per.setdefault("rejected", []).append(f"{sid} day {day}: age '{r[col]}' is not a number")
+                    else:
+                        p[key] = r[col]
             for col, (grp, iid) in colmap.items():
                 raw = r.get(col)
                 if raw in (None, ""):
