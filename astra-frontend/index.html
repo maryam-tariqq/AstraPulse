@@ -866,10 +866,6 @@
       stroke: var(--act)
     }
 
-    .bones {
-      display: none
-    }
-
     .met {
       padding: 12px 0;
       border-top: 1px solid var(--line)
@@ -1906,6 +1902,31 @@
       }
     }
 
+
+    .mstrip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      align-items: center;
+      margin: 0 0 16px;
+      font-size: 14px;
+      color: var(--mute)
+    }
+
+    .mstrip b {
+      color: var(--ink)
+    }
+
+    .mstrip select {
+      background: rgba(255, 255, 255, .06);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      font: inherit;
+      padding: 4px 8px;
+      color-scheme: dark
+    }
+
     #pred h3 {
       margin: 0 0 4px
     }
@@ -2680,7 +2701,7 @@
       <feColorMatrix type="matrix" values=".62 0 0 0 0  0 .70 0 0 0  0 0 .88 0 0  0 0 0 1 0" />
     </filter>
   </svg>
-  <div id="nav"><button id="brand" type="button"><b>ASTRA</b></button><span><span class="mono">Mission day <span class="mday">31</span> · <span
+  <div id="nav"><button id="brand" type="button"><b>ASTRA</b></button><span><span class="mono">Mission day <span class="mday">1</span> · <span
           id="met">31:00:00:00</span></span><button id="startnav" class="start" type="button">Start
         measuring</button><button id="hbtn" class="start" type="button" hidden>Home</button></span></div>
   <div id="home">
@@ -2696,7 +2717,7 @@
           </div>
         </div>
         <div class="cue" id="cue">Scroll to descend<i></i></div>
-        <div class="chap" id="c1"><small>Mission day <span class="mday">31</span></small>
+        <div class="chap" id="c1"><small>Mission day <span class="mday">1</span></small>
           <h2>Weightless, and still being measured.</h2>
           <p>Keep scrolling. Your daily measurements start below.</p>
         </div>
@@ -2710,8 +2731,8 @@
     <main id="content">
       <header class="intro"><span class="eyebrow">Daily check-in</span>
         <h2>Ready for today's measurements?</h2>
-        <p class="sub">Nine quick checks, about eight minutes: heart and blood pressure, breathing, glucose,
-          temperature, sleep, mood and fatigue, motion sickness, cabin air, and exercise. Choose a crew member below to
+        <p class="sub">Seven quick checks, about eight minutes: heart and blood pressure, oxygen and cabin air, sleep,
+          focus and mood, exercise, temperature and motion sickness, and any pain. Choose a crew member below to
           begin.</p>
       </header>
       <div class="box" id="crewbox"></div>
@@ -2724,6 +2745,7 @@
         <div>
           <h2>Your last results</h2>
           <p id="sum"></p>
+          <p class="cmsum" id="dnote"></p>
         </div>
       </div>
       <div class="grid" id="cards"></div>
@@ -2770,11 +2792,11 @@
                 <g transform="translate(240 0)">
                   <image class="bodybase" href="assets/body.png" width="680" height="1140" />
                   <g class="zlit s-ok" data-zone="head" mask="url(#mk-head)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="skin" mask="url(#mk-skin)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="legs" mask="url(#mk-legs)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="chest" mask="url(#mk-chest)"><image href="assets/body.png" width="680" height="1140" /></g><g class="zlit s-ok" data-zone="abdomen" mask="url(#mk-abdomen)"><image href="assets/body.png" width="680" height="1140" /></g>
-                  <use href="#zs-head" class="zone s-ok" data-zone="head" tabindex="0" role="button" aria-label="Head and brain" /><use href="#zs-skin" class="zone s-ok" data-zone="skin" tabindex="0" role="button" aria-label="Arms, skin and whole body" /><use href="#zs-legs" class="zone s-ok" data-zone="legs" tabindex="0" role="button" aria-label="Bones and legs" /><use href="#zs-chest" class="zone s-ok" data-zone="chest" tabindex="0" role="button" aria-label="Chest and heart" /><use href="#zs-abdomen" class="zone s-ok" data-zone="abdomen" tabindex="0" role="button" aria-label="Abdomen" />
+                  <use href="#zs-head" class="zone s-ok" data-zone="head" tabindex="0" role="button" aria-label="Head and brain" /><use href="#zs-skin" class="zone s-ok" data-zone="skin" tabindex="0" role="button" aria-label="Arms, skin and whole body" /><use href="#zs-legs" class="zone s-ok" data-zone="legs" tabindex="0" role="button" aria-label="Legs and exercise" /><use href="#zs-chest" class="zone s-ok" data-zone="chest" tabindex="0" role="button" aria-label="Chest and heart" /><use href="#zs-abdomen" class="zone s-ok" data-zone="abdomen" tabindex="0" role="button" aria-label="Abdomen and motion sickness" />
                   <line class="zl s-ok" data-zone="head" x1="-10" y1="62" x2="338" y2="62" /><circle class="zd s-ok" data-zone="head" cx="338" cy="62" r="6" /><circle class="zp s-ok" cx="338" cy="62" r="6" /><line class="zl s-ok" data-zone="skin" x1="-10" y1="420" x2="165" y2="420" /><circle class="zd s-ok" data-zone="skin" cx="165" cy="420" r="6" /><circle class="zp s-ok" cx="165" cy="420" r="6" /><line class="zl s-ok" data-zone="legs" x1="-10" y1="795" x2="272" y2="795" /><circle class="zd s-ok" data-zone="legs" cx="272" cy="795" r="6" /><circle class="zp s-ok" cx="272" cy="795" r="6" /><line class="zl s-ok" data-zone="chest" x1="690" y1="285" x2="372" y2="285" /><circle class="zd s-ok" data-zone="chest" cx="372" cy="285" r="6" /><circle class="zp s-ok" cx="372" cy="285" r="6" /><line class="zl s-ok" data-zone="abdomen" x1="690" y1="470" x2="392" y2="470" /><circle class="zd s-ok" data-zone="abdomen" cx="392" cy="470" r="6" /><circle class="zp s-ok" cx="392" cy="470" r="6" />
                 </g>
               </svg>
-              <button type="button" class="albl L s-ok" data-zone="head" style="top:5.4%" aria-label="Head and brain">Mind and cabin air</button><button type="button" class="albl L s-ok" data-zone="skin" style="top:36.8%" aria-label="Arms, skin and whole body">Temperature</button><button type="button" class="albl L s-ok" data-zone="legs" style="top:69.7%" aria-label="Bones and legs">Bones</button><button type="button" class="albl R s-ok" data-zone="chest" style="top:25.0%" aria-label="Chest and heart">Heart and breathing</button><button type="button" class="albl R s-ok" data-zone="abdomen" style="top:41.2%" aria-label="Abdomen">Glucose</button>
+              <button type="button" class="albl L s-ok" data-zone="head" style="top:5.4%" aria-label="Head and brain">Mind and cabin air</button><button type="button" class="albl L s-ok" data-zone="skin" style="top:36.8%" aria-label="Arms, skin and whole body">Temperature</button><button type="button" class="albl L s-ok" data-zone="legs" style="top:69.7%" aria-label="Legs and exercise">Exercise</button><button type="button" class="albl R s-ok" data-zone="chest" style="top:25.0%" aria-label="Chest and heart">Heart and breathing</button><button type="button" class="albl R s-ok" data-zone="abdomen" style="top:41.2%" aria-label="Abdomen and motion sickness">Motion sickness</button>
             </div>
           </div>
           <div>
@@ -2826,9 +2848,9 @@
     const D = {
       head: { short: "Mind", card: "Mood and fatigue", name: "Head and brain", func: "Controls mood, focus and sleep rhythm.", status: "watch", label: "Watch", value: "5.8", unit: "/ 10 fatigue", range: "Target: below 5", trend: [3.4, 3.9, 4.4, 5, 5.4, 5.7, 5.8], why: "Isolation, long workdays and shifting light wear down mood and sleep.", action: "Complete the daily check-in and protect 7 or more hours of sleep tonight.", how: "Rate mood and fatigue from 1 to 10 in the daily check-in." },
       chest: { short: "Heart", card: "Heart", name: "Chest and heart", func: "Pumps blood and oxygen around the body.", status: "ok", label: "Normal", value: "68", unit: "bpm resting", range: "Normal: 60 to 100 bpm", trend: [66, 67, 66, 69, 68, 70, 68], why: "Without gravity the heart works differently and fluid shifts toward the head.", action: "Keep up cardio. Re-measure blood pressure tomorrow morning.", how: "Sit still for 5 minutes, then use the cuff on your left upper arm." },
-      abdomen: { short: "Glucose", card: "Blood sugar", name: "Abdomen", func: "Digests food and helps balance blood sugar.", status: "watch", label: "Watch", value: "112", unit: "mg/dL", range: "Fasting target: 70 to 100", trend: [98, 101, 104, 106, 108, 110, 112], why: "Stress, exercise changes and diet can shift blood sugar during a mission.", action: "Log a fasting reading tomorrow before breakfast.", how: "Use the fingertip meter before eating and log the number." },
+      abdomen: { short: "Motion", card: "Motion sickness", name: "Abdomen and motion sickness", func: "Balance and stomach: how the body copes with movement and changing gravity.", status: "ok", label: "Normal", value: "0", unit: "of 3 severity", range: "0 means none", trend: [1, 1, 1, 0, 1, 0, 0], why: "Moving between gravity levels confuses the inner ear and can upset the stomach.", action: "Move your head slowly and drink water. Tell the flight surgeon if it gets worse.", how: "Rate how queasy you feel from 0 (none) to 3 (severe)." },
       skin: { short: "Temp", card: "Temperature and radiation", name: "Arms, skin and whole body", func: "Shows temperature and radiation exposure.", status: "ok", label: "Normal", value: "36.8", unit: "°C", range: "Normal: 36.1 to 37.2", trend: [36.7, 36.8, 36.8, 36.9, 36.7, 36.8, 36.8], why: "Closed cabins affect heat balance, and radiation exposure builds up over a mission.", action: "No action needed. Check your dosimeter at the weekly review.", how: "Use the forehead thermometer, away from vents." },
-      legs: { short: "Bones", card: "Bone health", name: "Bones and legs", func: "Support the body and store calcium.", status: "act", label: "Action needed", value: "2", unit: "of 5 sessions", range: "Weekly target: 5 sessions", trend: [5, 4, 4, 3, 3, 2, 2], why: "Without gravity loading, bones lose density and muscles weaken. Exercise is the main protection.", action: "Complete a resistance session today and book the next three.", how: "Log each session in the exercise tracker.", esc: "Two more missed sessions this week should be flagged to the flight surgeon." },
+      legs: { short: "Exercise", card: "Exercise", name: "Legs and exercise", func: "Legs and muscles carry you; exercise protects bones, muscle and heart fitness.", status: "watch", label: "Watch", value: "30", unit: "min resistance", range: "Aim for 30 to 90 min a day", trend: [50, 45, 40, 35, 30, 30, 30], why: "Without gravity loading, bones and muscles weaken. Daily exercise is the main protection.", action: "Complete a resistance session today.", how: "Log each session in the exercise tracker." },
       sleep: { short: "Sleep", card: "Sleep", name: "Sleep", func: "Restores the body and mind.", status: "watch", label: "Watch", value: "6.1", unit: "h per night", range: "Target: 7 to 8 h", trend: [6.9, 6.7, 6.5, 6.4, 6.2, 6.1, 6.1], why: "Light cycles and noise in a spacecraft shorten sleep.", action: "Keep a fixed sleep window and dim cabin lights an hour before bed.", how: "Wear the sleep band and log how rested you feel." }
     };
     const CARDS = ["legs", "head", "chest", "sleep", "abdomen", "skin"], CSS = { ok: "#5fae8e", watch: "#d9a441", act: "#e0705a" }, ICON = { ok: "●", watch: "▲", act: "■" }, PT = { ok: 100, watch: 70, act: 35 };
@@ -2837,7 +2859,7 @@
     /* content */
     const ks = Object.keys(D), score = Math.round(ks.reduce((a, k) => a + PT[D[k].status], 0) / ks.length), cnt = s => ks.filter(k => D[k].status === s).length;
     $("#cards").innerHTML = CARDS.map(k => { const d = D[k]; return `<div class="card"><div class="h"><h3>${d.card}</h3><span class="badge ${d.status}">${ICON[d.status]} ${d.label}</span></div><div class="row"><div><div class="v mono">${d.value}<span class="u">${d.unit}</span></div><div class="rg">${d.range}</div></div>${spark(d.trend, CSS[d.status])}</div><p>${d.action}</p></div>` }).join("");
-    $("#sum").textContent = `${ks.length} areas tracked: ${cnt("ok")} normal, ${cnt("watch")} on watch, ${cnt("act")} needing action. Bone health is the priority today.`;
+    $("#sum").textContent = `${ks.length} areas tracked: ${cnt("ok")} normal, ${cnt("watch")} on watch, ${cnt("act")} needing action. Sleep and exercise are the priorities today.`;
     $("#c2h").textContent = `${cnt("act")} needs action, ${cnt("watch")} on watch.`; $("#c2p").textContent = "Scroll on for the full summary of every area.";
     $("#score").innerHTML = `${score}<small>of 100</small>`; const arc = $("#arc"); arc.style.stroke = score >= 80 ? CSS.ok : score >= 55 ? CSS.watch : CSS.act; arc.style.strokeDashoffset = 327 * (1 - score / 100);
     (function () {
@@ -2862,21 +2884,20 @@
       $("#c1").style.opacity = seg(p, .3, .38) * (1 - seg(p, .56, .62)); $("#c2").style.opacity = seg(p, .68, .76) * (1 - seg(p, .9, .96));
       $("#fade").style.opacity = seg(p, .9, 1); requestAnimationFrame(frame)
     }
-    const MD0 = parseInt(new URLSearchParams(location.search).get("day") || "31", 10); document.querySelectorAll(".mday").forEach(e => e.textContent = MD0); let S0 = MD0 * 86400; const p2 = n => String(n).padStart(2, "0"); setInterval(() => { S0++; $("#met").textContent = `${Math.floor(S0 / 86400)}:${p2(Math.floor(S0 % 86400 / 3600))}:${p2(Math.floor(S0 % 3600 / 60))}:${p2(S0 % 60)}` }, 1000);
+    let S0 = 0; const p2 = n => String(n).padStart(2, "0"); setInterval(() => { S0++; $("#met").textContent = `${Math.floor(S0 / 86400)}:${p2(Math.floor(S0 % 86400 / 3600))}:${p2(Math.floor(S0 % 3600 / 60))}:${p2(S0 % 60)}` }, 1000);
     /* ---------- measurement and results flow ---------- */
-    const R = { hr: { name: "Resting heart rate", unit: "bpm", n: [60, 100], w: [50, 110] }, sys: { name: "Systolic pressure", unit: "mmHg", n: [90, 129], w: [80, 139] }, dia: { name: "Diastolic pressure", unit: "mmHg", n: [60, 84], w: [50, 89] }, glu: { name: "Fasting glucose", unit: "mg/dL", n: [70, 100], w: [60, 125] }, temp: { name: "Body temperature", unit: "°C", n: [36.1, 37.2], w: [35.5, 37.9] }, sleep: { name: "Sleep last night", unit: "h", n: [7, 12], w: [5.5, 12] }, mood: { name: "Mood", unit: "/ 10", n: [6, 10], w: [4, 10] }, fat: { name: "Fatigue", unit: "/ 10", n: [0, 4], w: [0, 7] }, ex: { name: "Resistance sessions this week", unit: "of 5", n: [4, 5], w: [3, 5] } };
+    const R = { hr: { name: "Resting heart rate", unit: "bpm", n: [60, 100], w: [50, 110] }, sys: { name: "Systolic pressure", unit: "mmHg", n: [90, 129], w: [80, 139] }, dia: { name: "Diastolic pressure", unit: "mmHg", n: [60, 84], w: [50, 89] }, temp: { name: "Body temperature", unit: "°C", n: [36.1, 37.2], w: [35.5, 37.9] }, sleep: { name: "Sleep last night", unit: "h", n: [7, 12], w: [5.5, 12] }, mood: { name: "Mood", unit: "/ 10", n: [6, 10], w: [4, 10] }, fat: { name: "Fatigue", unit: "/ 10", n: [0, 4], w: [0, 7] }, ex: { name: "Resistance sessions this week", unit: "of 5", n: [4, 5], w: [3, 5] } };
     const STEPS = [
       { title: "Heart rate and blood pressure", why: "Spaceflight shifts fluid toward the head and changes how the heart works.", how: ["Sit still and relax for 5 minutes.", "Wrap the cuff on your left upper arm, level with your heart.", "Press start and keep your arm still until the cuff finishes.", "Read the heart rate, the top number (systolic) and the bottom number (diastolic)."], f: [{ k: "hr", label: "Resting heart rate", unit: "bpm", min: 30, max: 220, v: 68 }, { k: "sys", label: "Systolic (top number)", unit: "mmHg", min: 60, max: 220, v: 118 }, { k: "dia", label: "Diastolic (bottom number)", unit: "mmHg", min: 30, max: 140, v: 76 }] },
-      { title: "Blood glucose", why: "Stress, diet and activity changes can shift blood sugar in space.", how: ["Wash and dry your hands.", "Insert a test strip into the meter.", "Prick the side of a fingertip with the lancet.", "Touch the blood drop to the strip and wait for the reading.", "Measure before eating for a fasting reading."], f: [{ k: "glu", label: "Fasting blood glucose", unit: "mg/dL", min: 30, max: 500, v: 112 }] },
       { title: "Body temperature", why: "Closed cabins change how the body holds heat.", how: ["Wait 15 minutes after exercise or a hot drink.", "Hold the forehead thermometer about 3 cm from your forehead, away from vents.", "Press the button and read the display."], f: [{ k: "temp", label: "Body temperature", unit: "°C", min: 33, max: 42, v: 36.8, step: .1 }] },
       { title: "Sleep", why: "Light cycles and noise in a spacecraft shorten sleep.", how: ["Open the sleep band summary or your sleep log.", "Read the total hours you slept last night."], f: [{ k: "sleep", label: "Hours slept last night", unit: "h", min: 0, max: 14, v: 6.1, step: .1 }] },
       { title: "Mood and fatigue", why: "Isolation and long workdays wear down mood and energy.", how: ["Take a moment to notice how you feel right now.", "Mood: 1 is very low, 10 is excellent.", "Fatigue: 1 is fully rested, 10 is exhausted."], f: [{ k: "mood", label: "Mood", unit: "/ 10", min: 1, max: 10, v: 5, r: 1 }, { k: "fat", label: "Fatigue", unit: "/ 10", min: 1, max: 10, v: 6, r: 1 }] },
       { title: "Exercise this week", why: "Resistance exercise is the main protection against bone and muscle loss.", how: ["Open the exercise tracker.", "Count the resistance sessions you completed in the past 7 days."], f: [{ k: "ex", label: "Resistance sessions completed", unit: "of 5", min: 0, max: 5, v: 2, r: 1 }] }];
-    const ZN = { head: { name: "Head and brain", ms: ["mood", "fat", "sleep"] }, chest: { name: "Chest and heart", ms: ["hr", "sys", "dia"] }, abdomen: { name: "Abdomen", ms: ["glu"] }, skin: { name: "Arms, skin and whole body", ms: ["temp"] }, legs: { name: "Bones and legs", ms: ["ex"] } };
+    const ZN = { head: { name: "Head and brain", ms: ["mood", "fat", "sleep"] }, chest: { name: "Chest and heart", ms: ["hr", "sys", "dia"] }, abdomen: { name: "Abdomen and motion sickness", ms: ["sms"] }, skin: { name: "Arms, skin and whole body", ms: ["temp"] }, legs: { name: "Legs and exercise", ms: ["ex"] } };
     const PLAN = {
       head: { t: "Rest and recovery plan", p: "Mood, fatigue or sleep is outside the normal range.", s: ["Set a fixed 8-hour sleep window tonight and dim cabin lights an hour before.", "Take a 10-minute breathing or stretching break.", "Call a family member or crewmate.", "Repeat the mood and fatigue check tomorrow morning."] },
       chest: { t: "Heart and blood pressure plan", p: "Heart rate or blood pressure is outside the normal range.", s: ["Rest seated for 10 minutes, then measure again.", "Avoid caffeine and hard exercise for 2 hours.", "Drink a full glass of water.", "If it stays outside the range, message the flight surgeon."] },
-      abdomen: { t: "Blood sugar plan", p: "Fasting glucose is outside the normal range.", s: ["Drink a glass of water and skip sugary snacks.", "Take a 10-minute walk or do light exercise.", "Measure again in 2 hours.", "If it stays outside the range, message the flight surgeon."] },
+      abdomen: { t: "Motion sickness plan", p: "Motion sickness is above zero or not fading.", s: ["Sit or float still and move your head slowly.", "Sip water and avoid a heavy meal for now.", "Look at a fixed point or close your eyes for a few minutes.", "If it gets worse or you cannot keep fluids down, message the flight surgeon."] },
       skin: { t: "Temperature plan", p: "Body temperature is outside the normal range.", s: ["Check cabin temperature and vents, then adjust your layers.", "Measure again in 30 minutes.", "Check your dosimeter badge.", "If a fever persists, message the flight surgeon."] }
     };
     const MOVES = [{ n: "Arm raises", t: "Raise both arms overhead, then lower them slowly.", c: "m-arms" }, { n: "Side leg raises", t: "Lift one leg out to the side, then the other.", c: "m-legs" }, { n: "Squats", t: "Bend your knees and lower your hips, then stand tall.", c: "m-squat" }, { n: "Calf raises", t: "Rise onto your toes, then lower slowly.", c: "m-calf" }];
@@ -2885,7 +2906,11 @@
     /* ---------- ASTRA backend link + conclusion: NASA-JSON rules where they exist, built-in ranges elsewhere, all in plain words ---------- */
     const QS = new URLSearchParams(location.search);
     const API = QS.get("api") || (location.protocol.startsWith("http") && location.port === "8000" ? location.origin : "http://127.0.0.1:8000");
-    const MDAY = parseInt(QS.get("day") || "31", 10), MPHASE = QS.get("phase") || "postflight";   /* day 31 = first new day after the 30-day CSVs; override with ?day=&phase= */
+    /* mission day and phase follow the selected astronaut: next day after their last saved day, same phase as that day.
+       ?day=&phase= in the URL still overrides both. The phase can also be changed on the measurement screen. */
+    const QDAY = QS.get("day"), QPH = QS.get("phase"), PHL = { preflight: "Preflight", inflight: "Inflight", landing_day: "Landing day", postflight: "Postflight" };
+    let MDAY = QDAY ? parseInt(QDAY, 10) : 1, MPHASE = QPH || "preflight";
+    function setMission(d, ph) { MDAY = d; if (ph) MPHASE = ph; document.querySelectorAll(".mday").forEach(e => e.textContent = MDAY); S0 = MDAY * 86400; const m = $("#mph"); if (m) m.value = MPHASE }
     const BK = {
       hr: ["crew", "resting_hr_bpm"],
       sys: ["crew", "systolic_mmHg"],
@@ -2933,7 +2958,6 @@
       temp: { name: "Resting core temp", unit: "°C", n: [36.1, 37.8], w: [35.5, 38.2] },
       tpeak: { name: "Exercise peak temp", unit: "°C", n: [37.0, 39.2], w: [36.5, 40.0] },
       co2: { name: "Cabin CO2", unit: "mmHg", n: [0, 2.3], w: [0, 3.0] },
-      glu: { name: "Fasting blood glucose", unit: "mg/dL", n: [70, 100], w: [60, 125] }
     });
     STEPS.length = 0;
     STEPS.push(
@@ -3010,31 +3034,30 @@
         ]
       },
       {
-        title: "Body Temperature, Motion Sickness & Glucose",
+        title: "Body Temperature & Motion Sickness",
         why: "Core temperature rises in microgravity, especially during exercise, and gravity transitions can trigger motion sickness.",
         how: [
           "Measure resting core temperature away from cabin cooling vents.",
           "Enter peak core temperature reached during today's exercise session.",
-          "Rate space motion sickness severity from 0 (none) to 3 (severe), and enter fasting glucose."
+          "Rate space motion sickness severity from 0 (none) to 3 (severe)."
         ],
         f: [
           { k: "temp", label: "Resting core temperature", unit: "°C", min: 34, max: 42, v: 36.8, step: .05 },
           { k: "tpeak", label: "Exercise peak core temperature", unit: "°C", min: 35, max: 43, v: 38.1, step: .05 },
-          { k: "sms", label: "Motion sickness severity (0–3)", unit: "0 to 3", min: 0, max: 3, v: 0, r: 1 },
-          { k: "glu", label: "Fasting blood glucose", unit: "mg/dL", min: 30, max: 500, v: 92 }
+          { k: "sms", label: "Motion sickness severity (0–3)", unit: "0 to 3", min: 0, max: 3, v: 0, r: 1 }
         ]
       }
     );
     /* pain question: where is the pain? exactly 5 choices, one per body area; left unanswered = no pain */
-    const PAIN = [["head", "Head"], ["chest", "Chest"], ["abdomen", "Abdomen"], ["skin", "Arms, skin or whole body"], ["legs", "Legs or bones"]];
+    const PAIN = [["head", "Head"], ["chest", "Chest"], ["abdomen", "Abdomen"], ["skin", "Arms, skin or whole body"], ["legs", "Legs"]];
     const PAINNOTE = "This app cannot judge pain. Tell the flight surgeon or mission medical team about it, especially if it is new, getting worse, or comes with other symptoms.";
     const PAINPLAN = { t: "Pain follow-up", p: "You reported pain in this area.", s: ["Note when the pain started and what makes it better or worse.", "Message the flight surgeon or mission medical team about it.", "Tell them at once if it gets worse or you feel unwell."] };
     STEPS.push({ title: "Pain", why: "Pain in one part of the body can be an early sign that something needs a check.", how: ["Think about whether anything hurts right now.", "If it does, choose the area where the pain is.", "If nothing hurts, leave the choice empty."], f: [{ k: "pain", label: "Where is the pain?", unit: "choose one", opts: PAIN, v: "" }] });
     ZN.chest.ms = ["hr", "sys", "dia", "sv", "spo2", "dizzy"];
-    ZN.head.ms = ["sleep", "seff", "circ", "fat", "pvt", "poms", "headache", "sms", "co2"];
+    ZN.head.ms = ["sleep", "seff", "circ", "fat", "pvt", "poms", "headache", "co2"];
     ZN.legs.ms = ["aero", "ex", "vo2"];
     ZN.skin.ms = ["temp", "tpeak"];
-    ZN.abdomen.ms = ["glu"];
+    ZN.abdomen.ms = ["sms"];
     async function post(group, values) {
       const readings = {};
       for (const k in values) {
@@ -3142,19 +3165,18 @@
         if (s === "watch") return { h: nm + " is unusual for you", b: own, d: "Rest for 10 minutes, then measure again. If it is still off tomorrow, mention it to the flight surgeon." };
         return { h: nm + " is well outside your usual", b: own, d: "Rest for 10 minutes and measure again. If it stays like this, message the flight surgeon today." }
       }
-      if (a.type === "note") return { h: "No warning so far", b: `NASA has no fixed in-flight target for ${nm.toLowerCase()}, so we compare it with your own past days. That check starts after 5 days of readings.`, d: "" };
+      if (a.type === "note") return { h: "No warning so far", b: `NASA has no fixed in-flight target for ${nm.toLowerCase()}, so we compare it with your own past days. That check starts once you have 3 days in the same phase.`, d: "" };
       return { h: s === "ok" ? "No warning" : s === "watch" ? "Worth watching" : "Needs action", b: a.msg, d: a.action }
     }
     /* plain wording for readings the NASA file has no rule for (app's simple built-in ranges) */
     function plainB(k) {
       const v = V[k], r = R[k], s = mst0(k);
       if (k === "mood") return s === "ok" ? { h: "Mood is good", b: `You rated it ${v} out of 10.`, d: "" } : s === "watch" ? { h: "Mood is lower than usual", b: `You rated it ${v} out of 10.`, d: "Take a short break, talk to a crewmate or family, and repeat the check tomorrow." } : { h: "Mood is very low", b: `You rated it ${v} out of 10.`, d: "Please talk to someone today: a crewmate, family, or the flight surgeon or psychologist." };
-      if (k === "glu") { const low = v < r.n[0]; return s === "ok" ? { h: "Blood sugar is normal", b: `${v} mg/dL is in the usual fasting range of 70 to 100.`, d: "" } : low ? { h: s === "watch" ? "Blood sugar is a little low" : "Blood sugar is low", b: `${v} mg/dL is below the usual fasting range of 70 to 100.`, d: "Have something with fast sugar, such as juice or a sweet snack, and measure again in 15 minutes. If it stays low or you feel shaky or confused, message the flight surgeon now." } : { h: s === "watch" ? "Blood sugar is a little high" : "Blood sugar is high", b: `${v} mg/dL is above the usual fasting range of 70 to 100.`, d: "Drink water, skip sugary snacks, take a 10-minute walk, and measure again in 2 hours. If it stays high, message the flight surgeon." } }
       if (k === "ex") return s === "ok" ? { h: "Bone and muscle work on track", b: `${v} minutes of resistance exercise today.`, d: "" } : { h: s === "watch" ? "A bit behind on exercise" : "Behind on bone-protecting exercise", b: `${v} minutes of resistance exercise today. Resistance exercise is the main protection against bone and muscle loss in space.`, d: "Do a resistance session today and book the next ones." };
       return { h: s === "ok" ? "Within range" : "Outside range", b: `${v} ${r.unit}`, d: "" }
     }
     const P = k => A[k] ? plain(k) : plainB(k);
-    const tagOf = k => { if (!A[k]) return "App's simple range, not NASA"; const t = A[k].type; return t === "personal_baseline" ? "Your own past days" : t === "uncited_default" ? "General medical rule, not NASA" : t === "note" ? "Needs 5 days of history" : "NASA-linked study" };
+    const tagOf = k => { if (!A[k]) return "App's simple range, not NASA"; const t = A[k].type; return t === "personal_baseline" ? "Your own past days" : t === "uncited_default" ? "General medical rule, not NASA" : t === "note" ? "Needs 3 days in this phase" : "NASA-linked study" };
     function srcLink(id) { const s = AX.src[id]; if (s && s.url && /^https?:/.test(s.url)) return `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(id)}</a>`; return esc(id) }
     function sci(k) { const a = A[k]; return `<details><summary>Show the science</summary><p class="src">${esc(a.msg)}</p>${a.pending.map(p => `<p class="src">${esc(p)}</p>`).join("")}${k === "temp" ? `<p class="src">The NASA study measured core body temperature. A forehead reading is only an approximation.</p>` : ""}${a.src.length ? `<p class="src">Sources: ${a.src.map(srcLink).join(", ")}</p>` : ""}<p class="src">"What to do" texts are general safety advice written for this app, not NASA instructions.</p></details>` }
     function metNote(k) { const p = plain(k); return `<div class="mh">${esc(p.h)}</div><p class="mb">${esc(p.b)}</p>${sci(k)}` }
@@ -3163,7 +3185,7 @@
       const out = []; if (z === "head" && compList().length) out.push(COMP.d); for (const k of ZN[z].ms) { if (mst(k) !== "ok") { const p = P(k); if (p.d && !out.includes(p.d)) out.push(p.d) } }
       return out.length ? out.map(esc).join("<br><br>") : d.action
     }
-    const AREAS = [["chest", "Heart and breathing"], ["head", "Mind and cabin air"], ["skin", "Temperature"], ["abdomen", "Glucose"], ["legs", "Bones"]];
+    const AREAS = [["chest", "Heart and breathing"], ["head", "Mind and cabin air"], ["skin", "Temperature"], ["abdomen", "Motion sickness"], ["legs", "Exercise"]];
     function nasaBox() {
       const b = $("#nasa"), comp = compList();
       const zs = AREAS.map(([z, nm]) => ({ z: z, nm: nm, s: zst(z), ms: ZN[z].ms.map(k => ({ k: k, s: mst(k), p: P(k) })) }));
@@ -3184,7 +3206,7 @@
         + `<div class="kick">Your conclusion</div><div class="vh ${worst}"><i>${ICON[worst]}</i>${esc(VD[0])}</div><p class="vs">${esc(VD[1])}</p>`
         + (steps.length ? `<div class="nx"><div class="nl">Do this now</div><ol>${steps.slice(0, 3).map(t => `<li>${esc(t)}</li>`).join("")}</ol></div>` : "")
         + zs.map(area).join("")
-        + `<details class="fine"><summary>Sources and fine print</summary>${waiting ? `<p class="src">Some readings are compared with your own past days. That check switches on after 5 days of readings.</p>` : ""}<p class="src">Glucose and resistance exercise use the app's simple built-in ranges where the NASA rule file has no rule for them.</p>${Object.keys(AX.src).map(id => { const s = AX.src[id]; return `<p class="src"><b>${srcLink(id)}</b>: ${esc(s.citation)} (${esc(s.nasa_link)}; checked: ${esc(s.verified)})</p>` }).join("")}<p class="src">This is a guide, not a doctor. Warnings from the NASA file describe results from NASA-linked studies. The cut-offs and "what to do" texts are this app's own choices. If you feel unwell, contact the flight surgeon.</p></details>`
+        + `<details class="fine"><summary>Sources and fine print</summary>${waiting ? `<p class="src">Some readings are compared with your own past days. That check switches on once you have 3 days in the same phase.</p>` : ""}${Object.keys(AX.src).map(id => { const s = AX.src[id]; return `<p class="src"><b>${srcLink(id)}</b>: ${esc(s.citation)} (${esc(s.nasa_link)}; checked: ${esc(s.verified)})</p>` }).join("")}<p class="src">This is a guide, not a doctor. Warnings from the NASA file describe results from NASA-linked studies. The cut-offs and "what to do" texts are this app's own choices. If you feel unwell, contact the flight surgeon.</p></details>`
     }
 
     const mst0 = k => { const v = V[k], r = R[k]; return v >= r.n[0] && v <= r.n[1] ? "ok" : v >= r.w[0] && v <= r.w[1] ? "watch" : "act" }; const mst = k => A[k] ? A[k].status : mst0(k);
@@ -3192,17 +3214,18 @@
     const zst = z => NM[Math.max(RANK[ZO[z] || "ok"], V.pain === z ? RANK.watch : 0, ...ZN[z].ms.map(k => RANK[mst(k)]))];
     function show(id) { $("#home").hidden = true; $("#app").hidden = false; document.querySelectorAll(".view").forEach(v => v.hidden = v.id !== id); $("#startnav").hidden = true; $("#hbtn").hidden = false; scrollTo(0, 0) }
     function stopG() { if (gi) { clearInterval(gi); gi = null } }
-    function goHome() { stopG(); $("#app").hidden = true; $("#home").hidden = false; $("#startnav").hidden = false; $("#hbtn").hidden = true; scrollTo(0, homeY) }
+    function goHome() { stopG(); $("#app").hidden = true; $("#home").hidden = false; $("#startnav").hidden = false; $("#hbtn").hidden = true; scrollTo(0, homeY); dash() }
     function startMeasure() { if (!$("#home").hidden) homeY = scrollY; stopG(); for (const k in done) delete done[k]; STEPS.forEach(S => S.f.forEach(f => { if (V[f.k] == null) V[f.k] = f.v })); st = 0; show("v-measure"); step() }
     function step() {
       const S = STEPS[st]; $("#progbar").style.width = (st / STEPS.length * 100) + "%";
-      $("#mbody").innerHTML = `<div class="crumb">Measurement ${st + 1} of ${STEPS.length}</div><h2>${S.title}</h2><p class="sub">${S.why}</p><div class="two"><div class="box"><h3>How to measure</h3><ol>${S.how.map(x => `<li>${x}</li>`).join("")}</ol></div><div class="box"><h3>Enter your reading</h3>${S.f.map(f => f.opts ? `<div class="fld"><label for="i_${f.k}">${f.label}</label><select id="i_${f.k}"><option value="" hidden ${V[f.k] ? "" : "selected"}>Choose only if you have pain</option>${f.opts.map(o => `<option value="${o[0]}" ${V[f.k] === o[0] ? "selected" : ""}>${o[1]}</option>`).join("")}</select><button class="btn" id="pclr" type="button" style="margin-top:8px">No pain</button></div>` : f.r ? `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="range" id="i_${f.k}" min="${f.min}" max="${f.max}" value="${V[f.k]}"><output id="o_${f.k}">${V[f.k]}</output></div>` : `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="number" id="i_${f.k}" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${V[f.k]}"></div>`).join("")}<div class="err" id="err" role="alert"></div></div></div><div class="nav2"><button class="btn" id="bk" type="button" ${st ? "" : "disabled"}>Back</button><button class="btn p" id="nx" type="button">${st === STEPS.length - 1 ? "Run analysis" : "Next"}</button></div>`;
+      $("#mbody").innerHTML = `<div class="mstrip">${esc(CUR.name)} · Mission day <b>${MDAY}</b> · Phase <select id="mph" aria-label="Mission phase">${Object.keys(PHL).map(k => `<option value="${k}" ${k === MPHASE ? "selected" : ""}>${PHL[k]}</option>`).join("")}</select><span class="rg">Day follows the last saved day. Change the phase if it has changed.</span></div><div class="crumb">Measurement ${st + 1} of ${STEPS.length}</div><h2>${S.title}</h2><p class="sub">${S.why}</p><div class="two"><div class="box"><h3>How to measure</h3><ol>${S.how.map(x => `<li>${x}</li>`).join("")}</ol></div><div class="box"><h3>Enter your reading</h3>${S.f.map(f => f.opts ? `<div class="fld"><label for="i_${f.k}">${f.label}</label><select id="i_${f.k}"><option value="" hidden ${V[f.k] ? "" : "selected"}>Choose only if you have pain</option>${f.opts.map(o => `<option value="${o[0]}" ${V[f.k] === o[0] ? "selected" : ""}>${o[1]}</option>`).join("")}</select><button class="btn" id="pclr" type="button" style="margin-top:8px">No pain</button></div>` : f.r ? `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="range" id="i_${f.k}" min="${f.min}" max="${f.max}" value="${V[f.k]}"><output id="o_${f.k}">${V[f.k]}</output></div>` : `<div class="fld"><label for="i_${f.k}">${f.label} (${f.unit})</label><input type="number" id="i_${f.k}" min="${f.min}" max="${f.max}" step="${f.step || 1}" value="${V[f.k]}"></div>`).join("")}<div class="err" id="err" role="alert"></div></div></div><div class="nav2"><button class="btn" id="bk" type="button" ${st ? "" : "disabled"}>Back</button><button class="btn p" id="nx" type="button">${st === STEPS.length - 1 ? "Run analysis" : "Next"}</button></div>`;
+      $("#mph").onchange = e => { MPHASE = e.target.value };
       S.f.forEach(f => { const i = $("#i_" + f.k); i.oninput = () => { V[f.k] = f.opts ? i.value : parseFloat(i.value); if (f.r) $("#o_" + f.k).textContent = i.value } }); const pc = $("#pclr"); if (pc) pc.onclick = () => { V.pain = ""; $("#i_pain").selectedIndex = 0 };
       $("#bk").onclick = () => { st--; step() };
       $("#nx").onclick = () => { for (const f of S.f) { if (f.opts) continue; const v = V[f.k]; if (isNaN(v) || v < f.min || v > f.max) { $("#err").textContent = `Enter ${f.label.toLowerCase()} between ${f.min} and ${f.max}.`; return } } if (st < STEPS.length - 1) { st++; step() } else analyze() }
     }
     function analyze() {
-      const call = askBackend(); show("v-analyze"); $("#progbar").style.width = "100%"; const msg = ["Checking heart and blood pressure…", "Comparing glucose and temperature…", "Reviewing sleep, mood and fatigue…", "Scoring bone health…", "Building your body report…"]; let i = 0; $("#aprog").style.width = "0";
+      const call = askBackend(); show("v-analyze"); $("#progbar").style.width = "100%"; const msg = ["Checking heart and blood pressure…", "Comparing temperature and motion sickness…", "Reviewing sleep, mood and fatigue…", "Scoring exercise and fitness…", "Building your body report…"]; let i = 0; $("#aprog").style.width = "0";
       const t = () => { $("#ap").textContent = msg[i]; $("#aprog").style.width = ((i + 1) / msg.length * 100) + "%"; i++; if (i >= msg.length) { clearInterval(iv); call.then(() => { saveCrew(); setTimeout(() => results(), 600) }) } }; const iv = setInterval(t, 600); t()
     }
     function bar(k) { const r = R[k], lo = r.w[0] - (r.w[1] - r.w[0]) * .3, hi = r.w[1] + (r.w[1] - r.w[0]) * .3, p = x => Math.min(100, Math.max(0, (x - lo) / (hi - lo) * 100)); return `<div class="bar" aria-hidden="true"><div class="n" style="left:${p(r.n[0])}%;width:${p(r.n[1]) - p(r.n[0])}%"></div><div class="mk" style="left:${p(V[k])}%"></div></div>` }
@@ -3213,8 +3236,8 @@
       $("#attn").innerHTML = zs.map(k => `<button class="tile" type="button" data-z="${k}" aria-pressed="false"><span><i class="${zst(k)}">${ICON[zst(k)]}</i>${D[k].short}</span><b class="mono">${V[TV[k]]}</b></button>`).join("");
       $("#attn").querySelectorAll("button").forEach(b => b.onclick = () => pick(b.dataset.z)); pick(z || bad[0] || "head")
     }
-    const TV = { head: "fat", chest: "hr", abdomen: "glu", skin: "temp", legs: "ex" }, MT = { mood: "head", fat: "head", pvt: "head", poms: "head", headache: "head", sms: "head", co2: "head", sleep: "sleep", seff: "sleep", circ: "sleep", hr: "chest", sys: "chest", dia: "chest", sv: "chest", spo2: "chest", dizzy: "chest", aero: "chest", vo2: "chest", glu: "abdomen", ex: "legs", temp: "skin", tpeak: "skin" },
-      DEFTAB = { head: "head", chest: "chest", abdomen: "abdomen", skin: "skin", legs: "legs" };   /* every body area has an exercise tab, so "Need action" always opens exercises */
+    const TV = { head: "fat", chest: "hr", abdomen: "sms", skin: "temp", legs: "ex" }, MT = { mood: "head", fat: "head", pvt: "head", poms: "head", headache: "head", co2: "head", sleep: "sleep", seff: "sleep", circ: "sleep", hr: "chest", sys: "chest", dia: "chest", sv: "chest", spo2: "chest", dizzy: "chest", aero: "abdomen", vo2: "chest", ex: "legs", temp: "skin", tpeak: "skin" },
+      DEFTAB = { head: "head", chest: "chest", abdomen: "abdomen", skin: "skin", legs: "legs" };   /* abdomen (motion sickness) uses its own plan, see action() */   /* every body area has an exercise tab, so "Need action" always opens exercises */
     /* exercise page for the worst out-of-range reading in an area (none for temperature) */
     function exTab(z) { const bad = ZN[z].ms.filter(k => mst(k) !== "ok").sort((a, b) => RANK[mst(b)] - RANK[mst(a)]); for (const k of bad) if (MT[k]) return MT[k]; return null }
     function toEx(t) { try { sessionStorage.astraBack = "results" } catch (e) { } location.href = "exercises.html#" + t }
@@ -3227,17 +3250,17 @@
     }
     function action(z) {
       stopG();
-      /* safety plans stay as plans: pain with nothing else flagged, and low fasting glucose (eat first, exercise later) */
+      /* safety plans stay as plans: pain with nothing else flagged, and motion sickness (rest and fluids, not exercise) */
       const pOnly = V.pain === z && !ZO[z] && !ZN[z].ms.some(k => mst(k) !== "ok");
-      if (pOnly || (z === "abdomen" && V.glu < 70)) { plan(z); return }
+      if (pOnly || z === "abdomen") { plan(z); return }
       toEx(exTab(z) || DEFTAB[z])
     }
     function plan(z) {
-      const s = zst(z), pOnly = V.pain === z && !ZO[z] && !ZN[z].ms.some(k => mst(k) !== "ok"), P = pOnly ? PAINPLAN : z === "abdomen" && V.glu < 70 ? { t: "Low blood sugar plan", p: "Fasting glucose is below the normal range.", s: ["Eat or drink something with fast sugar, such as juice or a sweet snack.", "Measure again in 15 minutes.", "Rest until you feel steady.", "If it stays low or you feel shaky or confused, message the flight surgeon now."] } : PLAN[z]; show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · ${ZN[z].name}</div><h2>${P.t}</h2><p class="sub">${P.p}</p><div class="box"><ul class="acts">${P.s.map((x, i) => `<li><input type="checkbox" id="c${i}"><label for="c${i}">${x}</label></li>`).join("")}</ul></div>${s === "act" ? `<div class="esc">Your reading is well outside the normal range. Message the flight surgeon if it does not improve.</div>` : ""}<div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="dn" type="button" disabled>Mark as done</button></div>`;
+      const s = zst(z), pOnly = V.pain === z && !ZO[z] && !ZN[z].ms.some(k => mst(k) !== "ok"), P = pOnly ? PAINPLAN : PLAN[z]; show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · ${ZN[z].name}</div><h2>${P.t}</h2><p class="sub">${P.p}</p><div class="box"><ul class="acts">${P.s.map((x, i) => `<li><input type="checkbox" id="c${i}"><label for="c${i}">${x}</label></li>`).join("")}</ul></div>${s === "act" ? `<div class="esc">Your reading is well outside the normal range. Message the flight surgeon if it does not improve.</div>` : ""}<div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="dn" type="button" disabled>Mark as done</button></div>`;
       const cs = [...document.querySelectorAll("#abody input")]; cs.forEach(c => c.onchange = () => $("#dn").disabled = !cs.every(x => x.checked)); $("#back").onclick = () => results(z); $("#dn").onclick = () => { done[z] = true; results(z) }
     }
     function exercise() {
-      show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · Bone health</div><h2>Bone health session</h2><p class="sub">You logged ${V.ex} minutes of resistance exercise today. Follow four short moves to add one. It takes about one minute.</p><div class="box"><ol><li>Clear some space around you and secure loose items.</li><li>Follow the figure and the instruction on screen.</li><li>Every rep earns 10 points.</li></ol></div><div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="go" type="button">Start session</button></div>`;
+      show("v-action"); $("#abody").innerHTML = `<div class="crumb">Need action · Resistance exercise</div><h2>Resistance exercise session</h2><p class="sub">You logged ${V.ex} minutes of resistance exercise today. Follow four short moves to add one. It takes about one minute.</p><div class="box"><ol><li>Clear some space around you and secure loose items.</li><li>Follow the figure and the instruction on screen.</li><li>Every rep earns 10 points.</li></ol></div><div class="nav2"><button class="btn" id="back" type="button">Back to results</button><button class="btn p" id="go" type="button">Start session</button></div>`;
       $("#back").onclick = () => results("legs"); $("#go").onclick = () => { G = { i: 0, t: 0, reps: 0, pts: 0, pause: false }; game(); gi = setInterval(tick, 250) }
     }
     function game() {
@@ -3250,7 +3273,7 @@
       if (G.t >= 15) { next(); return } $("#gt").textContent = Math.ceil(15 - G.t); $("#gring").style.strokeDashoffset = 440 * (1 - G.t / 15); $("#gr").textContent = G.reps + " / 5"; $("#gp").textContent = G.pts
     }
     function next() { G.i++; G.t = 0; G.reps = 0; if (G.i >= MOVES.length) { stopG(); fin(); return } game() }
-    function fin() { $("#abody").innerHTML = `<div class="crumb">Session complete</div><h2>Nice work. +${G.pts} points</h2><p class="sub">You finished all ${MOVES.length} moves. Log this session to update your bone health plan.</p><div class="nav2"><button class="btn" id="back" type="button">Discard</button><button class="btn p" id="dn" type="button">Log session and return</button></div>`; $("#back").onclick = () => results("legs"); $("#dn").onclick = () => { done.legs = true; results("legs") } }
+    function fin() { $("#abody").innerHTML = `<div class="crumb">Session complete</div><h2>Nice work. +${G.pts} points</h2><p class="sub">You finished all ${MOVES.length} moves. Log this session to update your exercise plan.</p><div class="nav2"><button class="btn" id="back" type="button">Discard</button><button class="btn p" id="dn" type="button">Log session and return</button></div>`; $("#back").onclick = () => results("legs"); $("#dn").onclick = () => { done.legs = true; results("legs") } }
     /* ---------- three crew members (names are editable here) ---------- */
     /* ids match astronaut_id in the loaded CSVs (A01-A03) so each person is checked against their own 30-day history */
     const CREW = [{ id: "A01", name: "Crew 1" }, { id: "A02", name: "Crew 2" }, { id: "A03", name: "Crew 3" }];
@@ -3259,7 +3282,7 @@
     function saveAll(o) { try { localStorage.astraCrewData = JSON.stringify(o) } catch (e) { } }
     function clearState() { for (const k in V) delete V[k]; for (const k in A) delete A[k]; for (const k in ZO) delete ZO[k]; AX.ok = false; AX.err = ""; AX.reports = []; AX.src = {}; AX.labels = {} }
     function loadState(d) { clearState(); if (!d) return; Object.assign(V, d.V || {}); Object.assign(A, d.A || {}); Object.assign(ZO, d.ZO || {}); const x = d.AX || {}; AX.ok = !!x.ok; AX.err = x.err || ""; AX.reports = x.reports || []; AX.src = x.src || {}; AX.labels = x.labels || {} }
-    function setCrew(id) { CUR = CREW.find(c => c.id === id) || CUR; try { localStorage.astraCur = CUR.id } catch (e) { } loadState(loadAll()[CUR.id]); renderCrew() }
+    function setCrew(id) { CUR = CREW.find(c => c.id === id) || CUR; try { localStorage.astraCur = CUR.id } catch (e) { } loadState(loadAll()[CUR.id]); renderCrew(); dash() }
     function saveCrew() {
       const zs = Object.keys(ZN); let o = "ok"; for (const z of zs) if (RANK[zst(z)] > RANK[o]) o = zst(z);
       const c = []; for (const z of zs) for (const k of ZN[z].ms) { const s = mst(k); if (s !== "ok") c.push({ s: s, t: R[k].name + ": " + P(k).h }) } if (V.pain && ZN[V.pain]) c.push({ s: "watch", t: "Pain reported: " + ZN[V.pain].name }); c.sort((a, b) => RANK[b.s] - RANK[a.s]);
@@ -3340,11 +3363,75 @@
         + `<p class="pv-foot">Compared with your own last 7 days and with what crew on the station typically show. This is a guide, not a diagnosis. If you feel unwell, message the flight surgeon.</p>`;
       if (AX.ok) fillSpark(CUR.id);
     }
+
+    /* ---------- dashboard from the selected astronaut's saved days (CSV -> astra.db), via /subjects/<id>/status and /history ---------- */
+    const DASH = {
+      chest: { card: "Heart", ex: "chest", head: ["crew", "resting_hr_bpm"], unit: "bpm resting", range: "Typical resting: 50 to 90 bpm", ok: "Heart and blood pressure look steady.", ms: [["crew", "resting_hr_bpm"], ["crew", "systolic_mmHg"], ["crew", "diastolic_mmHg"], ["crew", "stroke_volume_ml"], ["crew", "spo2_pct"], ["crew", "dizziness_standing_flag"]] },
+      head: { card: "Mind and cabin air", ex: "head", head: ["crew", "fatigue_0_100"], unit: "of 100 fatigue", range: "Lower is better", ok: "Focus, mood and cabin air look fine.", ms: [["crew", "fatigue_0_100"], ["crew", "pvt_lapses"], ["crew", "poms_score"], ["crew", "headache_flag"], ["body_temperature", "cabin_co2_mmHg"]] },
+      sleep: { card: "Sleep", ex: "sleep", head: ["crew", "sleep_hours"], unit: "h per night", range: "Aim for 7 to 8 h", ok: "Sleep looks fine.", ms: [["crew", "sleep_hours"], ["crew", "sleep_efficiency_pct"], ["crew", "circadian_misaligned"]] },
+      legs: { card: "Exercise", ex: "legs", head: ["crew", "resistance_min"], unit: "min resistance", range: "Aim for 30 to 90 min a day", ok: "Exercise is on track.", ms: [["crew", "aerobic_min"], ["crew", "resistance_min"], ["crew", "vo2_pct_baseline"]] },
+      abdomen: { card: "Motion sickness", ex: "none", head: ["motion_sickness", "severity_0_3"], unit: "of 3 severity", range: "0 means none", ok: "No motion sickness worth noting.", ms: [["motion_sickness", "severity_0_3"]] },
+      skin: { card: "Temperature", ex: "skin", head: ["body_temperature", "core_temp_rest_c"], unit: "°C resting", range: "Typical: 36.1 to 37.2 °C", ok: "Body temperature looks fine.", ms: [["body_temperature", "core_temp_rest_c"], ["body_temperature", "core_temp_exercise_peak_c"]] }
+    };
+    let dashTok = 0;
+    async function dash() {
+      const tok = ++dashTok, id = CUR.id;
+      let st, hist;
+      try {
+        const [a, b] = await Promise.all([fetch(API + "/subjects/" + encodeURIComponent(id) + "/status"), fetch(API + "/subjects/" + encodeURIComponent(id) + "/history")]);
+        if (a.status === 404) { st = null; hist = [] } else { if (!a.ok || !b.ok) throw new Error("HTTP " + a.status + "/" + b.status); st = await a.json(); hist = await b.json() }
+      } catch (e) { if (tok === dashTok) { const m = $("#sum"); if (m && !/backend was not reached/.test(m.textContent)) m.textContent += " (Sample data: the backend was not reached, so these are not " + CUR.name + "'s real results.)" } return }
+      if (tok !== dashTok) return; HIST[id] = hist;
+      if (!st) { setMission(QDAY ? MDAY : 1, QPH || "preflight"); $("#sum").textContent = CUR.name + " has no saved days yet. Start measuring to begin their history."; $("#dnote").textContent = ""; return }
+      const first = (t, n = 140) => { t = String(t || "").trim(); const m = t.match(/^.*?[.!?](\s|$)/); t = m ? m[0].trim() : t; return t.length > n ? t.slice(0, n - 1).replace(/\s+\S*$/, "") + "…" : t };
+      const IND = {}, phases = [];
+      for (const g in st.groups || {}) for (const e of [].concat(st.groups[g])) {
+        const ph = e.detail_phase || e.phase; if (ph && !phases.includes(ph)) phases.push(ph);
+        for (const i in e.indicators || {}) { const x = e.indicators[i], key = g + "|" + i, old = IND[key]; if (!old || (RANK[x.status] || 0) > (RANK[old.status] || 0)) IND[key] = x }
+      }
+      const lastPhase = phases[0] || "inflight";
+      if (!QDAY) setMission(st.day + 1, QPH || lastPhase);   /* dynamic: next day after the last saved day, same phase unless changed */
+      const LABS = { ok: "Normal", watch: "Watch", act: "Action needed", none: "Not scored yet" }, IC2 = { ok: "●", watch: "▲", act: "■", none: "○" };
+      const out = {};
+      for (const z in DASH) {
+        const A0 = DASH[z], mem = A0.ms.map(m => ({ key: m.join("|"), x: IND[m.join("|")] })).filter(m => m.x);
+        const scored = mem.filter(m => RANK[m.x.status] !== undefined), bad = scored.filter(m => m.x.status !== "ok").sort((a, b) => RANK[b.x.status] - RANK[a.x.status]);
+        const status = scored.length ? NM[Math.max(...scored.map(m => RANK[m.x.status]))] : "none";
+        const hx = IND[A0.head.join("|")], hv = hx && typeof hx.value === "number" ? hx.value : null;
+        const trend = hist.filter(r => r.group === A0.head[0] && r.indicator === A0.head[1] && r.day <= st.day && typeof r.value === "number").sort((a, b) => a.day - b.day).slice(-7).map(r => r.value);
+        let action;
+        if (status === "none") action = mem.length ? "Not scored yet: ASTRA needs 3 days in this phase to compare with " + CUR.name + "'s own normal." : "No readings saved for this area.";
+        else if (!bad.length) action = A0.ok + (scored.length < mem.length ? " " + (mem.length - scored.length) + " more reading" + (mem.length - scored.length > 1 ? "s need" : " needs") + " more days." : "");
+        else { const w = bad[0].x; action = "Flagged: " + bad.map(m => m.x.label || m.key.split("|")[1]).join(", ") + ". " + first((w.what_to_do && w.what_to_do[0]) || (w.checks && w.checks[0] && w.checks[0].action) || "Keep an eye on it and tell the flight surgeon if it continues.") }
+        out[z] = { A0, status, label: LABS[status], value: hv == null ? "–" : String(Math.round(hv * 10) / 10), trend, action };
+      }
+      const zs = Object.keys(out), scoredZ = zs.filter(z => out[z].status !== "none"), cnt2 = s => zs.filter(z => out[z].status === s).length;
+      const score = scoredZ.length ? Math.round(scoredZ.reduce((a, z) => a + PT[out[z].status], 0) / scoredZ.length) : null;
+      $("#cards").innerHTML = zs.map(z => { const d = out[z], col = CSS[d.status] || "#8fa0c9"; return `<div class="card" data-exercise="${d.A0.ex}"><div class="h"><h3>${d.A0.card}</h3><span class="badge ${d.status}">${IC2[d.status]} ${d.label}</span></div><div class="row"><div><div class="v mono">${d.value}<span class="u">${d.A0.unit}</span></div><div class="rg">${d.A0.range}</div></div>${d.trend.length > 1 ? spark(d.trend, col) : ""}</div><p>${esc(d.action)}</p></div>` }).join("");
+      const worst = scoredZ.filter(z => out[z].status !== "ok").sort((a, b) => RANK[out[b].status] - RANK[out[a].status])[0];
+      const PHN = PHL[lastPhase] || lastPhase, nPh = new Set(hist.filter(r => String(r.phase).toLowerCase() === String(lastPhase).toLowerCase() && r.day < st.day).map(r => r.day)).size;   /* earlier days only: the backend needs 3 of them */
+      $("#sum").textContent = `${CUR.name} · latest saved day ${st.day} (${PHN}): ${scoredZ.length} of ${zs.length} areas scored, ${cnt2("ok")} normal, ${cnt2("watch")} on watch, ${cnt2("act")} needing action.` + (worst ? ` Biggest concern: ${out[worst].A0.card.toLowerCase()}.` : "") + ` Next check: mission day ${st.day + 1}.`;
+      const un = zs.length - scoredZ.length, need = Math.max(0, 3 - nPh);
+      $("#dnote").textContent = need ? `Why some readings say "Not scored yet": ASTRA compares each reading with ${CUR.name}'s own recent days in the same phase and needs 3 earlier days first. ${CUR.name} has ${nPh} earlier ${PHN.toLowerCase()} day${nPh === 1 ? "" : "s"} so far, so this switches on after ${need} more day${need === 1 ? "" : "s"}. Fixed NASA limits still apply meanwhile.` : un ? `Some readings say "Not scored yet" because they have fewer than 3 earlier days in the same phase and posture. Fixed NASA limits still apply.` : "";
+      $("#c2h").textContent = `${cnt2("act")} needs action, ${cnt2("watch")} on watch.`;
+      $("#score").innerHTML = `${score == null ? "–" : score}<small>of 100</small>`; const arc = $("#arc"); arc.style.stroke = score == null ? "#8fa0c9" : score >= 80 ? CSS.ok : score >= 55 ? CSS.watch : CSS.act; arc.style.strokeDashoffset = 327 * (1 - (score || 0) / 100);
+      /* sleep and fatigue over the saved days */
+      const ser = (g, i, sc) => hist.filter(r => r.group === g && r.indicator === i && r.day <= st.day && typeof r.value === "number").sort((a, b) => a.day - b.day).map(r => [r.day, r.value * sc]);
+      const sl = ser("crew", "sleep_hours", 1), fa = ser("crew", "fatigue_0_100", .1);
+      if (sl.length > 2) {
+        const d0 = sl[0][0], d1 = sl[sl.length - 1][0], X = d => 40 + (d - d0) / Math.max(1, d1 - d0) * 540, Y = v => 200 - v / 10 * 170, L = a => a.map(q => X(q[0]).toFixed(1) + "," + Y(q[1]).toFixed(1)).join(" ");
+        let g = ""; [0, 2.5, 5, 7.5, 10].forEach(v => g += `<line x1="40" x2="580" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(120,150,230,.15)"/><text x="8" y="${Y(v) + 4}" fill="#8fa0c9" font-size="11">${v}</text>`);
+        [0, .25, .5, .75, 1].forEach(f => { const d = Math.round(d0 + f * (d1 - d0)); g += `<text x="${X(d)}" y="216" fill="#8fa0c9" font-size="11" text-anchor="middle">Day ${d}</text>` });
+        $("#chart").innerHTML = g + `<polyline fill="none" stroke="#7fb0ff" stroke-width="3" stroke-linejoin="round" points="${L(sl)}"/>` + (fa.length > 2 ? `<polyline fill="none" stroke="#ffb020" stroke-width="3" stroke-linejoin="round" points="${L(fa)}"/>` : "");
+        const bx = $("#chart").closest(".box"); bx.querySelector("h3").textContent = "Sleep and fatigue over the saved days"; bx.querySelector("p").textContent = `${CUR.name}, days ${d0} to ${d1}`;
+        $("#chart").setAttribute("aria-label", "Sleep hours and fatigue over the saved days"); const lg = bx.querySelector(".lg"); if (lg) lg.innerHTML = `<span style="color:#7fb0ff">● Sleep (hours, higher is better)</span><span style="color:#ffb020">● Fatigue (0 to 10, lower is better)</span>`
+      }
+    }
     renderCrew();
     document.querySelectorAll("#fwrap .zone,#fwrap .albl").forEach(e => { e.onmouseenter = e.onfocus = () => document.querySelectorAll(`#fwrap [data-zone="${e.dataset.zone}"]`).forEach(x => x.classList.add("hv")); e.onmouseleave = e.onblur = () => document.querySelectorAll("#fwrap .hv").forEach(x => x.classList.remove("hv")); e.onclick = () => pick(e.dataset.zone); e.onkeydown = ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); pick(e.dataset.zone) } } });
     function report() { show("v-report"); $("#rcrumb").textContent = "Report · " + CUR.name } function preds() { show("v-pred"); $("#pcrumb").textContent = "Predictions · " + CUR.name }
     const on = (q, f) => { const e = $(q); if (e) e.onclick = f }; on("#cta", startMeasure); on("#startnav", startMeasure); on("#hbtn", goHome); on("#brand", goHome); on("#again", startMeasure); on("#home2", goHome); on("#toreport", report); on("#rback", () => results(curZ)); on("#rhome", goHome); on("#topred", preds); on("#pback", report); on("#phome", goHome);
-    loadState(loadAll()[CUR.id]); renderCrew();   /* restore the saved crew member's last report on page load (was only restored after switching crew) */
+    dash(); loadState(loadAll()[CUR.id]); renderCrew();   /* restore the saved crew member's last report on page load (was only restored after switching crew) */
     if (location.hash === "#results") { try { const w = sessionStorage.astraWho; if (w) CUR = CREW.find(c => c.id === w) || CUR; renderCrew(); const s = JSON.parse(sessionStorage.astraV || "null"); if (s) { Object.assign(V, s); const sa = JSON.parse(sessionStorage.astraA || "null"); if (sa) { Object.assign(A, sa.A); Object.assign(ZO, sa.ZO); Object.assign(AX, sa.AX) } results() } } catch (e) { } history.replaceState(null, "", location.pathname + location.search) }
     addEventListener("resize", layout); layout(); frame();
     /* redesign: glass nav once past the hero or inside the app views */
