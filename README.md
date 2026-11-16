@@ -25,6 +25,8 @@ Open the application at:
 
 **http://127.0.0.1:8000/ui/**
 
+> **Data notice: the readings are synthetic.** `A01_30_days.csv`, `A02_30_days.csv` and `A03_30_days.csv` contain simulated data created for this prototype. They are not real astronaut measurements. The columns use the same indicator names as `astra_rules.json`, so the rules can be applied to them, but the rules did not generate the values. ASTRA PULSE is a demonstration of rule-based monitoring and is not medical advice.
+
 ## Dataset and Indicators
 
 This version uses rules, containing 20 indicators:
@@ -66,7 +68,7 @@ Available crew IDs are `A01`, `A02`, and `A03`.
 
 **Dashboard.** Tapping a crew card shows that astronaut's own saved data (latest saved day, scores, last 7 days, sleep and fatigue chart).
 
-**Mission day and phase are dynamic.** The next check is the day after the astronaut's last saved day, in the same phase as that day. The phase can be changed on the measurement screen (for example from inflight to postflight). `?day=&phase=` in the URL still overrides both.
+**Mission day and phase are dynamic.** The next check is the day after the astronaut's last saved day, in the same phase as that day. The phase can be changed on the measurement screen (for example from inflight to postflight).
 
 **"Not scored yet".** Personal-baseline checks need 3 earlier days in the same phase and posture. Right after a phase change, readings show "Not scored yet" and the dashboard explains why. Fixed NASA limits still apply during that time.
 
