@@ -1,6 +1,10 @@
 
 # ASTRA PULSE
 
+![ASTRA first page](screenshots/main_page.png)
+
+![ASTRA dashboard](screenshots/dashboard.png)
+
 ASTRA PULSE is an astronaut health-monitoring system that evaluates crew health indicators using rule-based monitoring and compound health rules.
 
 ## Getting Started
